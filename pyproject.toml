@@ -3,7 +3,9 @@ name = "backendlookowl"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
+    "bcrypt>=5.0.0",
     "fastapi>=0.136.1",
     "pydantic>=2.13.3",
+    "pyjwt>=2.12.1",
     "sqlalchemy>=2.0.49",
 ]
