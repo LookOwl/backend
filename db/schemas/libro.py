@@ -25,6 +25,7 @@ class Libro(BaseModel):
             - titulo: Titulo del libro.
             - isbn: Identificador global del libro.
             - descripcion: Descripción o sinopsis de los contenidos del libro.
+            - editorial: Nombre de la editorial de publicación del libro.
             - fecha_publicacion: Fecha de publicación del libro.
             - url_portada: URL para la recuperación de imagen de portada.
             - lenguaje: Idioma del libro registrado, por defecto español ("es")
@@ -36,6 +37,7 @@ class Libro(BaseModel):
     titulo: Mapped[str] = mapped_column(String(255))
     isbn: Mapped[Optional[str]] = mapped_column(String(13), unique=True)
     descripcion: Mapped[Optional[str]] = mapped_column(Text)
+    editorial: Mapped[Optional[str]] = mapped_column(String(100))
     fecha_publicacion: Mapped[Optional[date]]
     url_portada: Mapped[Optional[str]] = mapped_column(String(500))
     lenguaje: Mapped[str] = mapped_column(String(2), default="es")
