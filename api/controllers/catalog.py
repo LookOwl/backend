@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from api.dtos.bookDto import RegisterBookDto
+from api.dtos.book_dto import RegisterBookDto
 
 router = APIRouter(prefix="/catalog", tags=["catalog"])
 

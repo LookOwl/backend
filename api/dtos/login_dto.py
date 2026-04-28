@@ -5,6 +5,7 @@ class LoginDto(BaseModel):
     password : str
 
 class RegisterUserDto(BaseModel):
-    username : str
+    fullname : str
+    contact_number : int
     email : str
     password : str
