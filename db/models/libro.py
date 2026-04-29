@@ -3,8 +3,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Table, Text, Column, ForeignKey
 from typing import Optional
 from db.base import Base, BaseModel
-from db.schemas.autor import Autor
-from db.schemas.genero import Genero
+from db.models.autor import Autor
+from db.models.genero import Genero
 
 libro_autores = Table("libro_autores", Base.metadata,
     Column("libro_id", ForeignKey("libros.id"), primary_key=True),
