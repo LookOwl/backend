@@ -1,6 +1,6 @@
-from api.core.security import *
+from api.core.security import verify_password, generate_token, hash_password
 from api.dtos.login_dto import RegisterUserDto
-from api.repositories.user_repository import UserRepository
+from repositories.user_repository import UserRepository
 
 class AuthService:
     def __init__(
@@ -8,7 +8,7 @@ class AuthService:
             user_repo : UserRepository
         ) -> None:
         self.user_repo = user_repo
-        
+
 
     async def validateUser(
             self,
@@ -21,7 +21,7 @@ class AuthService:
             token = generate_token(str(user.id),user.role)
             return token
         return None
-    
+
     async def registerUser(self, userDto : RegisterUserDto):
         userDto.password = hash_password(password=userDto.password)
         try:
