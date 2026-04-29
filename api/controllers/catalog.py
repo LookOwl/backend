@@ -8,4 +8,3 @@ router = APIRouter(prefix="/catalog", tags=["catalog"])
 @router.post("/register")
 def registerBook(info : RegisterBookDto, user = Depends(extract_user)):
     return f"Book registered : {info.isbn}"
-

@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from api.dtos.login_dto import LoginDto , RegisterUserDto
 from api.services.auth_service import AuthService
-from api.services.exports.di import *
+from api.services.exports.di import get_auth_service
 
 router = APIRouter(prefix="/users",tags=["users"])
 
 @router.post("/login")
 async def login(
-    loginDto:LoginDto, 
-    authService : AuthService = Depends(get_auth_service), 
+    loginDto:LoginDto,
+    authService : AuthService = Depends(get_auth_service),
 ):
     token = await authService.validateUser(loginDto.email,loginDto.password)
     if token is None:
@@ -30,4 +30,3 @@ async def register(registerDto : RegisterUserDto, authService : AuthService = De
             detail="User already exists"
         )
     return f"registrado {registerDto.fullname}, {registerDto.email}, {registerDto.password}"
-
