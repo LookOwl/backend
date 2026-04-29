@@ -34,6 +34,12 @@ class UserRepository:
                 return MockUser(id,u.fullname,u.contact_number,u.email,u.password)
         return None
     
+    async def findUserById(
+        self,
+        user_id : str
+    ):
+        return "asd"
+    
 class MockUser:
     id : int
     fullname : str
