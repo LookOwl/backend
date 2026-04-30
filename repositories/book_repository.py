@@ -17,6 +17,7 @@ class BookRepository:
         return [self._to_domain(libro) for libro in libros]
 
     def save_book(self, book: Book) -> Book:
+        self._validate_book(book)
         libro = Libro(
             id = book.uid,
             titulo = book.title,
@@ -34,6 +35,18 @@ class BookRepository:
         self.db.commit()
         self.db.refresh(libro)
         return self._to_domain(libro)
+
+    def _validate_book(self, book: Book) -> None:
+        if not book.title or len(book.title) > 255:
+            raise ValueError("El titulo del libro no es valido")
+        if book.isbn and len(book.isbn) > 13:
+            raise ValueError("El ISBN del libro no es valido")
+        if book.editorial and len(book.editorial) > 100:
+            raise ValueError("La editorial del libro no es valida")
+        if book.cover_url and len(book.cover_url) > 500:
+            raise ValueError("La URL de portada no es valida")
+        if book.language and len(book.language) != 2:
+            raise ValueError("El lenguaje del libro no es valido")
 
     def _resolve_autores(self, nombres: list[str]) -> list[str]:
         autores = []
