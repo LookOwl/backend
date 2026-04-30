@@ -15,10 +15,10 @@ class AuthService:
             email : str,
             password : str
         ) -> str | None:
-        user = await self.user_repo.getUserByCredentials(email)
+        user = await self.user_repo.getUserCredentials(email)
         print(user)
         if (user is not None) and verify_password(password,user.password) :
-            token = generate_token(str(user.id),user.role)
+            token = generate_token(str(user.uid),user.role)
             return token
         return None
 

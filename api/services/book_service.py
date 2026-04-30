@@ -1,19 +1,28 @@
 from domain.book import Book
 from api.dtos.book_dto import RegisterBookDto
-
+from repositories.book_repository import BookRepository
 
 class BookService:
-    def __init__(self, book_repo) -> None:
+    def __init__(self, book_repo : BookRepository) -> None:
         self.repo = book_repo
 
 
-    def registerBook(self, book : RegisterBookDto):
+    async def registerBook(self, book : RegisterBookDto) -> int:
         toCreate = Book(
-            uid="",
+            uid=0,
             title=book.title,
+            isbn=book.isbn,
+            description=book.isbn,
+            editorial=book.editorial,
+            publication_date=book.publication_date,
+            cover_url=book.cover_url,
+            language=book.language,
             author=book.author,
             category=book.category,
-            isbn=book.isbn,
+            page_count=book.page_count,
             n_copies=0
         )
-        ##Aquí va una llamada al repo
+        saved = self.repo.save_book(toCreate)
+        return saved.uid 
+
+    
