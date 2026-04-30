@@ -50,7 +50,7 @@ def test_guardar_libro_valido(db_session):
     assert "Python" in saved.category
 
 
-def test_guardar_libro_isb_duplicado_error(db_session):
+def test_guardar_libro_isbn_duplicado_error(db_session):
     repo = BookRepository(db_session)
     book1 = crear_libro(uid="1", isbn="2222222222222")
     book2 = crear_libro(uid="2", isbn="2222222222222")
