@@ -14,4 +14,3 @@ class Book:
     author : list[str]
     category : list[str]
     page_count : int
-    n_copies : int
