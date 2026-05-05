@@ -1,55 +1,45 @@
-from api.dtos.login_dto import RegisterUserDto
 from domain.user import User, UserCredentials
-#Por el momento esto es un mock
+from domain.exceptions import UsuarioNoEncontrado
+from db.models.usuario import Usuario
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+
 class UserRepository:
-    
-    #mock
-    count:int
-    users:dict[str,RegisterUserDto]
 
-    def __init__(
-        self,
-        db
-    ) -> None:
+    def __init__(self, db: Session) -> None:
         self.db = db
-        self.count = 0
-        self.users = {}
 
-    async def saveUser(
-        self,
-        user : RegisterUserDto
-    ):
-        for id, u in self.users.items():
-            if u.email == user.email:
-                raise Exception(f"Correo ya registrado por usuario con id: {id}")
-        self.users[str(self.count)] = user
-        self.count += 1
+    def saveUser(self, user: User) -> User:
+        orm_user = Usuario(
+            nombre = user.full_name,
+            email = user.email,
+            numero_contacto = user.contact_number,
+            rol = user.role,
+            hash_contrasena = user.credentials.password_hash
+        )
+        self.db.add(orm_user)
+        self.db.commit()
+        self.db.refresh(orm_user)
+        return self._to_domain(orm_user)
 
-    async def getUserCredentials(
-        self,
-        email : str
-    ) -> UserCredentials | None:
-        for id, u in self.users.items():
-            if u.email == email:
-                return UserCredentials(
-                    str(id),
-                    u.email,
-                    u.password,
-                    "not implemented"
-                )
-        return None
-    
-    async def findUserById(
-        self,
-        user_id : str
-    ) -> User | None:
-        print(f"inside user repo, repo : {self.users}, argument id : {user_id}")
-        for id, u in self.users.items():
-            if id == user_id:
-                return User(
-                    user_id,
-                    u.fullname,
-                    u.contact_number,
-                    "roles not implemented yet"
-                )
-        return None
+    def getUserCredentials(self, email : str) -> User:
+        query = select(Usuario).where(Usuario.email == email)
+        datos = self.db.execute(query).scalar()
+
+        if datos is None:
+            raise UsuarioNoEncontrado(email)
+
+        return self._to_domain(datos)
+
+    def _to_domain(self, usuario: Usuario) -> User:
+        credenciales = UserCredentials(
+            password_hash = usuario.hash_contrasena
+        )
+        return User(
+            uid = str(usuario.id),
+            full_name = usuario.nombre,
+            email = usuario.email,
+            contact_number= usuario.numero_contacto,
+            role = usuario.rol.value,
+            credentials = credenciales
+        )
