@@ -2,14 +2,13 @@ from dataclasses import dataclass
 
 @dataclass
 class UserCredentials:
-    uid : str
-    email : str
-    password : str
-    role: str
+    password_hash: str
 
 @dataclass
 class User:
-    uid : str
-    full_name : str
-    contact_number : int
+    uid: str
+    full_name: str
+    email: str
+    contact_number: str
     role: str
+    credentials: UserCredentials

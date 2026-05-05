@@ -42,10 +42,7 @@ class BookService:
             language=book.language,
             author=book.author,
             category=book.category,
-            page_count=book.page_count,
-            n_copies=0
+            page_count=book.page_count
         )
         saved = self.repo.save_book(toCreate)
-        return saved.id 
-
-    
+        return saved.uid
