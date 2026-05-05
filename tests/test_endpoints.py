@@ -133,7 +133,7 @@ def test_login_user_endpoint_rejects_invalid_credentials(client):
     assert response.json()["detail"] == "User not found"
 
 
-def test_register_book_endpoint_requires_authorization(client, fake_user_repo):
+def test_register_book_endpoint_authorized_success(client, fake_user_repo):
     fake_user = types.SimpleNamespace(
         fullname="Authorized User",
         contact_number=555000111,
