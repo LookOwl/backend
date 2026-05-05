@@ -62,8 +62,11 @@ async def extract_user(
     user_repo : UserRepository = Depends(get_user_repository)
 ):
     try:
+        print("inside guard")
         payload = jwt.decode(credentials.credentials,SECRET_KEY,algorithms=[ALGORITHM])
-        user = await user_repo.findUserById(payload['sub'])
+        print(payload)
+        user  = await user_repo.findUserById(str(payload['sub']))
+        print(user)
         if user is None:
             raise ValueError
         return user

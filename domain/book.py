@@ -3,7 +3,7 @@ from datetime import date
 
 @dataclass
 class Book:
-    uid : str
+    uid : int
     title : str
     isbn : str
     description : str
