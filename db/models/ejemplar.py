@@ -2,13 +2,13 @@ from __future__ import annotations
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, String
 from db.base import BaseModel
-import enum
+from enum import Enum
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from db.models.libro import Libro
 
-class EstadoEjemplar(str, enum.Enum):
+class EstadoEjemplar(Enum):
     DISPONIBLE = "disponible"
     PRESTADO = "prestado"
     DANADO = "dañado"
