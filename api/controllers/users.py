@@ -29,4 +29,6 @@ async def register(registerDto : RegisterUserDto, authService : AuthService = De
             status_code=409,
             detail="User already exists"
         )
-    return f"registrado {registerDto.fullname}, {registerDto.email}, {registerDto.password}"
+    return {
+        "success" : success
+    }

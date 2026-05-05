@@ -12,3 +12,9 @@ class RegisterBookDto(BaseModel):
     author : list[str]
     category : list[str]
     page_count : int
+
+class SearchBookDto(BaseModel):
+    title : str | None
+    author : str | None
+    limit : int | None
+    offset : int | None

@@ -108,7 +108,7 @@ class BookRepository:
 
     def _to_domain(self, libro: Libro) -> Book:
         return Book(
-            uid = libro.id,
+            id = libro.id,
             title = libro.titulo,
             isbn = libro.isbn if libro.isbn else "",
             description = libro.descripcion if libro.descripcion else "",
