@@ -94,8 +94,10 @@ def test_register_user_endpoint(client):
 
     assert response.status_code == 200
     body = response.json()
-    assert body.startswith("registrado Test User, register@test.com,")
+    assert "Test User" in body
+    assert "register@test.com" in body
     assert "TestPassword123!" not in body
+    assert "password" not in body.lower()
 
 
 def test_login_user_endpoint_returns_token(client):
