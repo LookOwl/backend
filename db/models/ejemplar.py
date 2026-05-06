@@ -29,4 +29,4 @@ class Ejemplar(BaseModel):
     codigo: Mapped[str] = mapped_column(String(50), unique=True)
     estado: Mapped[EstadoEjemplar] = mapped_column(default=EstadoEjemplar.DISPONIBLE)
 
-    libros: Mapped["Libro"] = relationship(back_populates="ejemplar")
+    libro: Mapped["Libro"] = relationship(back_populates="ejemplares")

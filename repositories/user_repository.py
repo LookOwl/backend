@@ -1,6 +1,6 @@
 from domain.user import User, UserCredentials
 from domain.exceptions import UsuarioNoEncontrado
-from db.models.usuario import Usuario
+from db.models.usuario import Usuario, RolUsuario
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
@@ -9,13 +9,25 @@ class UserRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def saveUser(self, user: User) -> User:
+    def saveUserLector(self, user: User) -> User:
         orm_user = Usuario(
             nombre = user.full_name,
             email = user.email,
             numero_contacto = user.contact_number,
-            rol = user.role,
             hash_contrasena = user.credentials.password_hash
+        )
+        self.db.add(orm_user)
+        self.db.commit()
+        self.db.refresh(orm_user)
+        return self._to_domain(orm_user)
+
+    def saveUserBibliotecario(self, user: User) -> User:
+        orm_user = Usuario(
+            nombre = user.full_name,
+            email = user.email,
+            numero_contacto = user.contact_number,
+            hash_contrasena = user.credentials.password_hash,
+            rol = RolUsuario.BIBLIOTECARIO
         )
         self.db.add(orm_user)
         self.db.commit()
