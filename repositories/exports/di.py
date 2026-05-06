@@ -4,9 +4,8 @@ from fastapi import Depends
 from functools import lru_cache
 from db.connection import get_db
 
-@lru_cache
 def get_user_repository(
-    db = None
+    db = Depends(get_db)
 ):
     return UserRepository(db)
 

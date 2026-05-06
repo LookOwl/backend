@@ -27,7 +27,7 @@ async def register(registerDto : RegisterUserDto, authService : AuthService = De
     if(not success):
         raise HTTPException(
             status_code=409,
-            detail="User already exists"
+            detail="User could not be created"
         )
     return {
         "success" : success

@@ -28,15 +28,16 @@ class AuthService:
         userDto.password = hash_password(password=userDto.password)
         try:
             await self.user_repo.saveUser(User(
-                uid=userDto.uid,
+                uid="",
                 full_name=userDto.fullname,
                 email=userDto.email,
                 contact_number=userDto.contact_number,
-                role="user",
+                role="lector",
                 credentials=UserCredentials(
                     password_hash=userDto.password
                 )
             ))
             return True
         except Exception as e:
+            print(e)
             return False
