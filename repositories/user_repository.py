@@ -9,7 +9,7 @@ class UserRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def saveUserLector(self, user: User) -> User:
+    def save_user_lector(self, user: User) -> User:
         orm_user = Usuario(
             nombre = user.full_name,
             email = user.email,
@@ -21,7 +21,7 @@ class UserRepository:
         self.db.refresh(orm_user)
         return self._to_domain(orm_user)
 
-    def saveUserBibliotecario(self, user: User) -> User:
+    def save_user_bibliotecario(self, user: User) -> User:
         orm_user = Usuario(
             nombre = user.full_name,
             email = user.email,
@@ -34,12 +34,21 @@ class UserRepository:
         self.db.refresh(orm_user)
         return self._to_domain(orm_user)
 
-    def getUserCredentials(self, email : str) -> User:
+    def get_user_credentials(self, email : str) -> User:
         query = select(Usuario).where(Usuario.email == email)
         datos = self.db.execute(query).scalar()
 
         if datos is None:
             raise UsuarioNoEncontrado(email)
+
+        return self._to_domain(datos)
+
+    def get_user_by_id(self, id: int) -> User:
+        query = select(Usuario).where(Usuario.id == id)
+        datos = self.db.execute(query).scalar()
+
+        if datos is None:
+            raise UsuarioNoEncontrado(str(id))
 
         return self._to_domain(datos)
 
