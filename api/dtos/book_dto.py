@@ -1,20 +1,21 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, AnyUrl
 from datetime import date
+from core.validators import NonemptyString, NonEmptyStringList, PositiveInt, LanguageString, IsbnString
 
 class RegisterBookDto(BaseModel):
-    title : str
-    isbn : str
-    description : str
-    editorial : str
+    title : NonemptyString
+    isbn : IsbnString
+    description : NonemptyString
+    editorial : NonemptyString
     publication_date : date
-    cover_url : str
-    language : str
-    author : list[str]
-    category : list[str]
-    page_count : int
+    cover_url : AnyUrl
+    language : LanguageString
+    author : NonEmptyStringList
+    category : NonEmptyStringList
+    page_count : PositiveInt
 
 class SearchBookDto(BaseModel):
-    title : str | None
-    author : str | None
-    limit : int | None
-    offset : int | None
+    title : NonemptyString | None
+    author : NonemptyString | None
+    limit : PositiveInt | None
+    offset : PositiveInt | None
