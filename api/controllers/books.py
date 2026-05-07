@@ -31,9 +31,8 @@ async def getBooks(title:str | None = None,author:str | None= None,limit:int | N
 
 @router.post("/register")
 async def registerBook(info : RegisterBookDto, user : User = Depends(extract_user), service : BookService = Depends(get_book_service)):
-    if len(info.language) > 2: raise HTTPException(status_code=400, detail="Invalid language")
     id_created = await service.registerBook(info)
-    print(f"user with id {user.uid} name {user.full_name} accessed the endpoint")
+    
     return {
         "id" : id_created
     }

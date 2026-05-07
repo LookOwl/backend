@@ -38,7 +38,7 @@ class BookService:
             description=book.isbn,
             editorial=book.editorial,
             publication_date=book.publication_date,
-            cover_url=book.cover_url,
+            cover_url=book.cover_url.encoded_string(),
             language=book.language,
             author=book.author,
             category=book.category,
