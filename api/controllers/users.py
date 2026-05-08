@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from api.dtos.login_dto import LoginDto , RegisterUserDto
-from api.services.auth_service import AuthService
-from api.services.exports.di import get_auth_service
+from services.auth_service import AuthService
+from services.exports.di import get_auth_service
 
 router = APIRouter(prefix="/users",tags=["users"])
 
@@ -27,6 +27,8 @@ async def register(registerDto : RegisterUserDto, authService : AuthService = De
     if(not success):
         raise HTTPException(
             status_code=409,
-            detail="User already exists"
+            detail="User could not be created"
         )
-    return f"registrado {registerDto.fullname}, {registerDto.email}, {registerDto.password}"
+    return {
+        "success" : success
+    }

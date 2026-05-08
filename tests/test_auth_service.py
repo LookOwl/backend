@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 
-from api.services.auth_service import AuthService
+from services.auth_service import AuthService
 from api.dtos.login_dto import LoginDto, RegisterUserDto
-from api.core.security import (
+from core.security import (
     hash_password,
     verify_password,
     generate_token,

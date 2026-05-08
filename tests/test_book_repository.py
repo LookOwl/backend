@@ -23,7 +23,7 @@ def db_session():
 
 def crear_libro(**overrides) -> Book:
     return Book(
-        uid=overrides.get("uid", "1"),
+        id=overrides.get("uid", "1"),
         title=overrides.get("title", "Libro de Prueba"),
         isbn=overrides.get("isbn", "1111111111111"),
         description=overrides.get("description", "Descripción de prueba"),

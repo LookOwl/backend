@@ -1,6 +1,6 @@
 from fastapi import Depends
-from api.services.auth_service import AuthService
-from api.services.book_service import BookService
+from services.auth_service import AuthService
+from services.book_service import BookService
 from repositories.exports.di import get_user_repository
 from repositories.exports.di import get_book_repository
 

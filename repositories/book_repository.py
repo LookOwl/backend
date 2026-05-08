@@ -47,7 +47,7 @@ class BookRepository:
         if to_date:
             query = query.where(Libro.fecha_publicacion <= to_date)
 
-        query = query.distinct().offset(offset).limit(limit)
+        query = query.distinct().order_by(Libro.id).offset(offset).limit(limit)
         libros = list(self.db.execute(query).scalars().all())
         return [self._to_domain(libro) for libro in libros]
 
@@ -108,7 +108,7 @@ class BookRepository:
 
     def _to_domain(self, libro: Libro) -> Book:
         return Book(
-            uid = libro.id,
+            id = libro.id,
             title = libro.titulo,
             isbn = libro.isbn if libro.isbn else "",
             description = libro.descripcion if libro.descripcion else "",
