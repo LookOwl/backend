@@ -1,6 +1,6 @@
 from pydantic import BaseModel, AnyUrl
 from datetime import date
-from core.validators import NonemptyString, NonEmptyStringList, PositiveInt, LanguageString, IsbnString
+from core.validators import NonemptyString, NonEmptyStringList, PositiveInt, LanguageString, IsbnString,NonNegativeInt
 
 class RegisterBookDto(BaseModel):
     title : NonemptyString
@@ -17,5 +17,5 @@ class RegisterBookDto(BaseModel):
 class SearchBookDto(BaseModel):
     title : NonemptyString | None
     author : NonemptyString | None
-    limit : PositiveInt | None
-    offset : PositiveInt | None
+    limit : NonNegativeInt | None
+    offset : NonNegativeInt | None

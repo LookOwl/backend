@@ -16,17 +16,17 @@ class AuthService:
             email : str,
             password : str
         ) -> str | None:
-        user = self.user_repo.getUserCredentials(email)
+        user = self.user_repo.get_user_credentials(email)
         print(user)
         if (user is not None) and verify_password(password,user.credentials.password_hash) :
-            token = generate_token(str(user.email),user.role)
+            token = generate_token(user_id=user.uid,user_role=user.role)
             return token
         return None
 
     async def registerUser(self, userDto : RegisterUserDto):
         userDto.password = hash_password(password=userDto.password)
         try:
-            self.user_repo.saveUserLector(User(
+            self.user_repo.save_user_lector(User(
                 uid="",
                 full_name=userDto.fullname,
                 email=userDto.email,

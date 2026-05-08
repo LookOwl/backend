@@ -1,6 +1,8 @@
 from domain.book import Book
 from api.dtos.book_dto import RegisterBookDto, SearchBookDto
 from repositories.book_repository import BookRepository
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from core.exceptions import BookNotCreatedException
 
 class BookService:
     def __init__(self, book_repo : BookRepository) -> None:
@@ -13,14 +15,14 @@ class BookService:
             data = self.repo.get_books(
                 title=params.title,
                 author=params.author,
-                limit=params.limit+1,
+                limit=params.limit,
                 offset=params.offset
             )
         elif params.limit is not None:
             data = self.repo.get_books(
                 title=params.title,
                 author=params.author,
-                limit=params.limit+1
+                limit=params.limit
             )
         else:
             data = self.repo.get_books(
@@ -30,7 +32,7 @@ class BookService:
         
         return data
 
-    async def registerBook(self, book : RegisterBookDto) -> int:
+    async def registerBook(self, book : RegisterBookDto) -> int | None:
         toCreate = Book(
             id=0,
             title=book.title,
@@ -44,5 +46,11 @@ class BookService:
             category=book.category,
             page_count=book.page_count
         )
-        saved = self.repo.save_book(toCreate)
-        return saved.id
+        try:
+            saved = self.repo.save_book(toCreate)
+            return saved.id
+        except IntegrityError:
+            raise BookNotCreatedException("ISBN already exists")
+        except SQLAlchemyError:
+            raise BookNotCreatedException("Unknown exception")
+        

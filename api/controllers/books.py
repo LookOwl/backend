@@ -5,6 +5,7 @@ from services.book_service import BookService
 from api.dtos.book_dto import SearchBookDto, RegisterBookDto
 from domain.user import User
 from domain.book import Book
+from core.exceptions import BookNotCreatedException
 
 router = APIRouter(prefix="/books",tags=["books"])
 
@@ -13,14 +14,16 @@ async def getBooks(title:str | None = None,author:str | None= None,limit:int | N
     result : list[Book] = await bookService.getBooks(SearchBookDto(
         title=title,
         author=author,
-        limit=limit,
+        limit=limit+1,
         offset=offset
     ))
+    print(result)
     has_next = False
     next_cursor = None
     if limit is not None and len(result) > limit:
         has_next = True
-        next_cursor = limit + offset if offset is not None else limit  
+        next_cursor = limit + offset if offset is not None else limit
+        result.pop(-1)  
     return {
         "data" : result,
         "page" : {
@@ -31,7 +34,13 @@ async def getBooks(title:str | None = None,author:str | None= None,limit:int | N
 
 @router.post("/register")
 async def registerBook(info : RegisterBookDto, user : User = Depends(extract_user), service : BookService = Depends(get_book_service)):
-    id_created = await service.registerBook(info)
+    try:
+        id_created = await service.registerBook(info)
+    except BookNotCreatedException as e:
+        raise HTTPException(
+            status_code= 409,
+            detail=e.__str__()
+        )
     
     return {
         "id" : id_created

@@ -23,13 +23,18 @@ LanguageString = Annotated[
 NonEmptyStringList = Annotated[
     list[NonemptyString],
     Len(
-        min_len = 1
+        min_length= 1
     )
 ]
 
 PositiveInt = Annotated[
     int,
     Ge(1)
+]
+
+NonNegativeInt = Annotated[
+    int,
+    Ge(0)
 ]
 
 PhoneNumberString = Annotated[
@@ -48,6 +53,7 @@ def validate_isbn(isbn : str):
             .upper()
     )
     try:
+        print(normalized)
         match len(normalized):
             case 10:
                 sum = 0
@@ -60,7 +66,7 @@ def validate_isbn(isbn : str):
                     raise InvalidISBNException("Invalid ISBN-10 Checksum")
             case 13:
                 sum = 0
-                for i in range(9):
+                for i in range(13):
                     weight = 1 if i % 2 == 0 else 3
                     sum += weight * int(normalized[i])
                 checksum = sum % 10
@@ -73,13 +79,13 @@ def validate_isbn(isbn : str):
     except Exception as e:
         raise InvalidISBNException("Error parsing ISBN") 
     
-    return isbn
+    return normalized
 
 IsbnString = Annotated[
     str,
     StringConstraints(
         min_length=10,
-        max_length=13
+        max_length=17
     ),
     AfterValidator(validate_isbn)
 ]

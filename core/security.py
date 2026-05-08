@@ -63,9 +63,9 @@ async def extract_user(
 ):
     try:
         print("inside guard")
-        payload = jwt.decode(credentials.credentials,SECRET_KEY,algorithms=[ALGORITHM])
+        payload = decode_token(credentials.credentials)
         print(payload)
-        user  = user_repo.getUserCredentials(str(payload['sub']))
+        user  = user_repo.get_user_by_id(int(payload['sub']))
         print(user)
         if user is None:
             raise ValueError
@@ -76,3 +76,8 @@ async def extract_user(
                 status_code=409,
                 detail="Invalid token or user"
             )
+    except Exception:
+        raise HTTPException(
+            status_code=422,
+            detail="Fatal error. ID could be not an int"
+        )
