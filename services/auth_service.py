@@ -1,4 +1,4 @@
-from core.security import verify_password, generate_token, hash_password
+from core.security import verify_password, generate_token, hash_password, decode_token
 from api.dtos.login_dto import RegisterUserDto
 from domain.user import User, UserCredentials
 from repositories.user_repository import UserRepository
@@ -22,6 +22,11 @@ class AuthService:
             token = generate_token(user_id=user.uid,user_role=user.role)
             return token
         return None
+    
+    async def validateToken(self,token: str):
+        payload = decode_token(token)
+        user = self.user_repo.get_user_by_id(int(payload['sub']))
+        return user
 
     async def registerUser(self, userDto : RegisterUserDto):
         userDto.password = hash_password(password=userDto.password)

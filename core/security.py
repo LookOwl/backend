@@ -3,8 +3,8 @@ import jwt
 import bcrypt
 from fastapi import Security, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from repositories.user_repository import UserRepository
-from repositories.exports.di import get_user_repository
+from services.auth_service import AuthService  
+from services.exports.di import get_auth_service 
 
 SECRET_KEY = "This is a secret key. Do not share with anyone under any circumstances"
 ALGORITHM = "HS256"
@@ -59,25 +59,22 @@ def decode_token(token : str):
 
 async def extract_user(
     credentials: HTTPAuthorizationCredentials = Security(BEARER),
-    user_repo : UserRepository = Depends(get_user_repository)
+    auth_service : AuthService = Depends(get_auth_service)
 ):
     try:
-        print("inside guard")
-        payload = decode_token(credentials.credentials)
-        print(payload)
-        user  = user_repo.get_user_by_id(int(payload['sub']))
-        print(user)
+        user = auth_service.validateToken(credentials.credentials)
         if user is None:
             raise ValueError
         return user
 
     except (jwt.PyJWTError, ValueError):
         raise HTTPException(
-                status_code=409,
+                status_code=401,    #Unauthorized
                 detail="Invalid token or user"
             )
+    
     except Exception:
         raise HTTPException(
-            status_code=422,
-            detail="Fatal error. ID could be not an int"
+            status_code=422,        #Unprocessable Entity
+            detail="Fatal error. ID might not be an int"
         )
