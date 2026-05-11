@@ -11,10 +11,11 @@ router = APIRouter(prefix="/books",tags=["books"])
 
 @router.get("/")
 async def getBooks(title:str | None = None,author:str | None= None,limit:int | None= None,offset:int | None= None, bookService : BookService = Depends(get_book_service) ):
+    query_limit = limit + 1 if limit is not None else None
     result : list[Book] = await bookService.getBooks(SearchBookDto(
         title=title,
         author=author,
-        limit=limit+1,
+        limit=query_limit,
         offset=offset
     ))
     print(result)

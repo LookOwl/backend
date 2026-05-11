@@ -53,23 +53,39 @@ def validate_isbn(isbn : str):
             .upper()
     )
     try:
-        print(normalized)
         match len(normalized):
             case 10:
-                sum = 0
+                total = 0
+                normalized = normalized.upper()
                 for i in range(9):
-                    sum += i * int(normalized[i])
-                checksum = sum % 11
-                if checksum == 10 and normalized[-1] != 'X':
-                    raise InvalidISBNException("Invalid ISBN-10 Checksum")
-                elif int(normalized[-1]) != checksum:
+                    weight = 10 - i
+                    try:
+                        digit = int(normalized[i])
+                    except Exception:
+                        raise InvalidISBNException("Invalid character in ISBN-10")
+                    total += weight * digit
+
+                check_char = normalized[9]
+                if check_char == 'X':
+                    check_value = 10
+                else:
+                    try:
+                        check_value = int(check_char)
+                    except Exception:
+                        raise InvalidISBNException("Invalid character in ISBN-10 check digit")
+
+                total += check_value
+                if total % 11 != 0:
                     raise InvalidISBNException("Invalid ISBN-10 Checksum")
             case 13:
-                sum = 0
-                for i in range(13):
-                    weight = 1 if i % 2 == 0 else 3
-                    sum += weight * int(normalized[i])
-                checksum = sum % 10
+                total = 0
+                try:
+                    for i in range(13):
+                        weight = 1 if i % 2 == 0 else 3
+                        total += weight * int(normalized[i])
+                except Exception:
+                    raise InvalidISBNException("Invalid character in ISBN-13")
+                checksum = total % 10
                 if checksum != 0:
                     raise InvalidISBNException("Invalid ISBN-13 Checksum")
             case _ :
@@ -89,4 +105,3 @@ IsbnString = Annotated[
     ),
     AfterValidator(validate_isbn)
 ]
-
