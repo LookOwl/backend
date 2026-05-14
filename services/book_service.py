@@ -54,3 +54,6 @@ class BookService:
         except SQLAlchemyError:
             raise BookNotCreatedException("Unknown exception")
         
+    async def returnBook( id : int):
+        #Not implemented
+        pass
