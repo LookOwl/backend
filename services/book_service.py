@@ -54,3 +54,6 @@ class BookService:
         except SQLAlchemyError:
             raise BookNotCreatedException("Unknown exception")
         
+    async def borrowBook(self,id : int):
+        #La base de datos aún no tiene soporte para esto creo
+        pass

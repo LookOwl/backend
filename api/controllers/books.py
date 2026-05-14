@@ -6,6 +6,7 @@ from api.dtos.book_dto import SearchBookDto, RegisterBookDto
 from domain.user import User
 from domain.book import Book
 from core.exceptions import BookNotCreatedException
+from core.validators import PositiveInt
 
 router = APIRouter(prefix="/books",tags=["books"])
 
@@ -46,3 +47,16 @@ async def registerBook(info : RegisterBookDto, user : User = Depends(extract_use
     return {
         "id" : id_created
     }
+
+@router.post("/borrow/{id}")
+async def borrowBook(id : PositiveInt, user : User = Depends(extract_user), bookService : BookService = Depends(get_book_service)):
+    try:
+        book_id = await bookService.borrowBook(id)
+        return {
+            "id" : book_id
+        }
+    except:
+        raise HTTPException(
+            status_code=403,
+            detail="Book cannot be borrowed"
+        )
