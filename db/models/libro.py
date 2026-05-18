@@ -50,4 +50,4 @@ class Libro(BaseModel):
 
     autores: Mapped[list[Autor]] = relationship(secondary=libro_autores)
     generos: Mapped[list[Genero]] = relationship(secondary=libro_generos)
-    ejemplares: Mapped[list["Ejemplar"]] = relationship(back_populates="libro")
+    ejemplares: Mapped[list[Ejemplar]] = relationship(back_populates="libro")

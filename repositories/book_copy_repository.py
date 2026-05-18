@@ -27,5 +27,5 @@ class BookCopyRepository:
     def _to_domain(self, ejemplar: Ejemplar) -> BookCopy:
         return BookCopy(
             codigo=ejemplar.codigo,
-            estado=ejemplar.estado.value
+            estado=ejemplar.estado
         )

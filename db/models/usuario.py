@@ -1,11 +1,7 @@
 from db.base import BaseModel
+from domain.enums.roles_usuario import RolUsuario
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
-from enum import Enum
-
-class RolUsuario(Enum):
-    BIBLIOTECARIO = "bibliotecario"
-    LECTOR = "lector"
 
 class Usuario(BaseModel):
 
