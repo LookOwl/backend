@@ -1,11 +1,12 @@
+from __future__ import annotations
 from db.base import BaseModel
+from domain.enums.roles_usuario import RolUsuario
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
-from enum import Enum
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING
 
-class RolUsuario(Enum):
-    BIBLIOTECARIO = "bibliotecario"
-    LECTOR = "lector"
+if TYPE_CHECKING:
+    from db.models.prestamo import Prestamo
 
 class Usuario(BaseModel):
 
@@ -27,3 +28,5 @@ class Usuario(BaseModel):
     numero_contacto: Mapped[str] = mapped_column(String(11))
     rol: Mapped[RolUsuario] = mapped_column(default=RolUsuario.LECTOR)
     hash_contrasena: Mapped[str] = mapped_column(String(255))
+
+    prestamos: Mapped[list[Prestamo]] = relationship(back_populates="usuario")
