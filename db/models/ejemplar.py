@@ -7,6 +7,7 @@ from domain.enums.estado_ejemplares import EstadoEjemplar
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from db.models.libro import Libro
+    from db.models.prestamo import Prestamo
 
 class Ejemplar(BaseModel):
 
@@ -25,3 +26,4 @@ class Ejemplar(BaseModel):
     estado: Mapped[EstadoEjemplar] = mapped_column(default=EstadoEjemplar.DISPONIBLE)
 
     libro: Mapped[Libro] = relationship(back_populates="ejemplares")
+    prestamos: Mapped[list[Prestamo]] = relationship(back_populates="ejemplar")
