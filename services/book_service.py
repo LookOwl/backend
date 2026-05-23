@@ -1,5 +1,6 @@
 from domain.book import Book
 from domain.user import User
+from domain.enums.estado_prestamos import EstadoPrestamo
 from api.dtos.book_dto import RegisterBookDto, SearchBookDto
 from api.dtos.loan_dto import LoanDto
 from repositories.book_repository import BookRepository
@@ -69,16 +70,17 @@ class BookService:
             raise BookNotCreatedException("Unknown exception")
         
     async def borrowBook(self,loanDto:LoanDto, user : User):
-        
         try:
-            book_list = self.book_copy_repo.get_copies(loanDto.book_id)
-            if(len(book_list) == 0): raise NoBooksAvailableException
-            #Elegir la primera copia como la elegida
-            
+            if loanDto.n_days_requested > 14: raise IllegalBookLoan
+            active_loans = self.loan_repo.list_by_user_id(int(user.uid))
+            if(active_loans >= 3): raise IllegalBookLoan
+            self.loan_repo.create(Loan(
+                user_id=int(user.uid),
+                copy_code=loanDto.book_copy_id,
+                status=EstadoPrestamo.PENDIENTE
+            ))
         
         except Exception as e:
             raise e
 
-
-class IllegalBookId(Exception): pass
-class NoBooksAvailableException(Exception) : pass
+class IllegalBookLoan(Exception): pass

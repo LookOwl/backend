@@ -1,8 +1,11 @@
 from pydantic import BaseModel
-from core.validators import PositiveInt
-from datetime import date
+from domain.enums.estado_prestamos import EstadoPrestamo
+from core.validators import NonNegativeInt, PositiveInt
 
 class LoanDto(BaseModel):
-    book_id : PositiveInt
-    requested_date : date
-    n_days : date
+    book_copy_id : str
+    n_days_requested : PositiveInt
+
+class UpdateLoanDto(BaseModel):
+    loan_id : NonNegativeInt
+    status : EstadoPrestamo
