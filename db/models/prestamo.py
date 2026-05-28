@@ -26,13 +26,16 @@ class Prestamo(BaseModel):
     """
 
     __tablename__ = "prestamos"
+    __table_args__ = (
+            CheckConstraint("dias_prestamo < 14", name="ck_prestamos_dias_prestamo"),
+        )
 
     codigo_ejemplar: Mapped[str] = mapped_column(ForeignKey("ejemplares.codigo"))
     id_usuario_asociado: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
     fecha_aprobacion: Mapped[Optional[date]]
     fecha_vencimiento: Mapped[Optional[date]]
     fecha_regreso: Mapped[Optional[date]]
-    dias_prestamo: Mapped[int] = mapped_column(CheckConstraint("dias_prestamo < 14"))
+    dias_prestamo: Mapped[int]
     estado: Mapped[EstadoPrestamo] = mapped_column(default=EstadoPrestamo.PENDIENTE)
 
     usuario: Mapped[Usuario] = relationship(back_populates="prestamos")
