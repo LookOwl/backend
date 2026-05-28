@@ -8,7 +8,8 @@ class Loan:
     id: Optional[int]
     user_id: int
     copy_code: str
-    aproval_date: Optional[date]
+    loan_days: int
+    approval_date: Optional[date]
     due_date: Optional[date]
-    retrival_date: Optional[date]
+    return_date: Optional[date]
     status: EstadoPrestamo

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from db.models.prestamo import Prestamo
+    from db.models.solicitud_libro import SolicitudLibro
 
 class Usuario(BaseModel):
 
@@ -30,3 +31,4 @@ class Usuario(BaseModel):
     hash_contrasena: Mapped[str] = mapped_column(String(255))
 
     prestamos: Mapped[list[Prestamo]] = relationship(back_populates="usuario")
+    solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="usuario")
