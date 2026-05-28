@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from db.models.libro import Libro
     from db.models.prestamo import Prestamo
+    from db.models.solicitud_libro import SolicitudLibro
 
 class Ejemplar(BaseModel):
 
@@ -27,3 +28,4 @@ class Ejemplar(BaseModel):
 
     libro: Mapped[Libro] = relationship(back_populates="ejemplares")
     prestamos: Mapped[list[Prestamo]] = relationship(back_populates="ejemplar")
+    solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="ejemplar")
