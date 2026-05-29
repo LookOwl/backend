@@ -3,6 +3,7 @@ from repositories.user_repository import UserRepository
 from repositories.book_copy_repository import BookCopyRepository
 from repositories.loan_repository import LoanRepository
 from repositories.solicitud_libro_repository import SolicitudLibroRepository
+from repositories.book_embedding_repository import BookEmbeddingRepository
 from fastapi import Depends
 from db.connection import get_db
 
@@ -30,3 +31,8 @@ def get_solicitud_libro_repository(
     db = Depends(get_db)
 ):
     return SolicitudLibroRepository(db)
+
+def get_book_embedding_repository(
+    db = Depends(get_db)
+):
+    return BookEmbeddingRepository(db)
