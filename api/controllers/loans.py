@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from api.dtos.loan_dto import UpdateLoanDto
 
 from services.loan_service import LoanService, LoanException
-from services.exports.di import get_loan_service
+from dependencies.services import get_loan_service
 
 from domain.user import User
 from domain.enums.roles_usuario import RolUsuario

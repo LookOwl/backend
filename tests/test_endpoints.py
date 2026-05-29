@@ -12,7 +12,7 @@ from api.services.auth_service import AuthService
 from api.services.exports.di import get_auth_service, get_book_service
 from domain.user import User, UserCredentials
 from main import app
-from repositories.exports.di import get_user_repository
+from dependencies.repositories import get_user_repository
 
 
 class FakeUserRepository:

@@ -2,7 +2,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from domain.book_copy import BookCopy
 from domain.enums.estado_ejemplares import EstadoEjemplar
-from db.models.ejemplar import Ejemplar
+from infrastructure.database.models.ejemplar import Ejemplar
 from sqlalchemy import select
 
 class BookCopyRepository:

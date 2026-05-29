@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String
-from db.base import BaseModel
+from infrastructure.database.base import BaseModel
 
 class Genero (BaseModel):
     """

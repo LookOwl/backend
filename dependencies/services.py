@@ -2,9 +2,9 @@ from fastapi import Depends
 from services.auth_service import AuthService
 from services.book_service import BookService
 from services.loan_service import LoanService
-from repositories.exports.di import get_user_repository
-from repositories.exports.di import get_book_repository
-from repositories.exports.di import get_loan_repository
+from dependencies.repositories import get_user_repository
+from dependencies.repositories import get_book_repository
+from dependencies.repositories import get_loan_repository
 
 def get_auth_service(
     user_repo = Depends(get_user_repository)

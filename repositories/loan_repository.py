@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 
-from db.models.prestamo import Prestamo
+from infrastructure.database.models.prestamo import Prestamo
 from domain.loan import Loan
 from domain.enums.estado_prestamos import EstadoPrestamo
 

@@ -1,6 +1,6 @@
 from domain.user import User, UserCredentials
 from domain.exceptions import UsuarioNoEncontrado
-from db.models.usuario import Usuario
+from infrastructure.database.models.usuario import Usuario
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 

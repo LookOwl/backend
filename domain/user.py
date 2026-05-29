@@ -7,7 +7,7 @@ class UserCredentials:
 
 @dataclass
 class User:
-    uid: str
+    uid: int
     full_name: str
     email: str
     contact_number: str

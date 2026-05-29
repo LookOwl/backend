@@ -71,9 +71,19 @@ class BookService:
         
     async def borrowBook(self,loanDto:LoanDto, user : User):
         try:
+            #El préstamo no puede exceder los 14 días
             if loanDto.n_days_requested > 14: raise IllegalBookLoan
-            active_loans = self.loan_repo.list_by_user_id(int(user.uid))
-            if(active_loans >= 3): raise IllegalBookLoan
+            
+            #El usuario debe tener menos de 3 préstamos activos
+            active_loans = self.loan_repo.list(
+                user_id = user.uid,
+                status= EstadoPrestamo.ACTIVO,
+                limit=4
+            )
+            if(len(active_loans) > 3): raise IllegalBookLoan
+            
+            # si se cumple todo, entonces insertémoslo en la cola
+            
             self.loan_repo.create(Loan(
                 user_id=int(user.uid),
                 copy_code=loanDto.book_copy_id,

@@ -4,7 +4,7 @@ import jwt
 import bcrypt
 from fastapi import Security, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from repositories.exports.di import get_user_repository
+from dependencies.repositories import get_user_repository
 
 if TYPE_CHECKING:
     from services.auth_service import AuthService

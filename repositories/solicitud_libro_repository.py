@@ -2,7 +2,7 @@ from typing import Optional, Sequence
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from db.models.solicitud_libro import SolicitudLibro as SolicitudLibroModel
+from infrastructure.database.models.solicitud_libro import SolicitudLibro as SolicitudLibroModel
 from domain.solicitud_libro import BookRequest
 from domain.enums.estado_solicitud import EstadoSolicitud
 

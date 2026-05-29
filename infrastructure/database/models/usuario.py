@@ -1,13 +1,13 @@
 from __future__ import annotations
-from db.base import BaseModel
+from infrastructure.database.base import BaseModel
 from domain.enums.roles_usuario import RolUsuario
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from db.models.prestamo import Prestamo
-    from db.models.solicitud_libro import SolicitudLibro
+    from infrastructure.database.models.prestamo import Prestamo
+    from infrastructure.database.models.solicitud_libro import SolicitudLibro
 
 class Usuario(BaseModel):
 

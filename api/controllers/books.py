@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from services.exports.di import get_book_service
+from dependencies.services import get_book_service
 from core.security import extract_user 
 from services.book_service import BookService
 from api.dtos.book_dto import SearchBookDto, RegisterBookDto
