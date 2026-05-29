@@ -16,7 +16,7 @@ class SolicitudLibroRepository:
         return BookRequest(
             id=model.id,
             user_id=model.id_usuario,
-            copy_code=model.codigo_ejemplar,
+            book_id=model.id_libro,
             wait_time=model.tiempo_espera,
             status=model.estado,
         )
@@ -24,7 +24,7 @@ class SolicitudLibroRepository:
     def _to_model(self, entity: BookRequest) -> SolicitudLibroModel:
         return SolicitudLibroModel(
             id_usuario=entity.user_id,
-            codigo_ejemplar=entity.copy_code,
+            codigo_ejemplar=entity.book_id,
             tiempo_espera=entity.wait_time,
             estado=entity.status,
         )
@@ -45,6 +45,7 @@ class SolicitudLibroRepository:
     def list(
         self,
         user_id: Optional[int] = None,
+        book_id: Optional[str] = None,
         status: Optional[EstadoSolicitud] = None,
         limit: int = 50,
         offset: int = 0,
@@ -52,6 +53,8 @@ class SolicitudLibroRepository:
         stmt = select(SolicitudLibroModel)
         if user_id is not None:
             stmt = stmt.where(SolicitudLibroModel.id_usuario == user_id)
+        if book_id is not None:
+            stmt = stmt.where(SolicitudLibroModel.id_libro == book_id)
         if status is not None:
             stmt = stmt.where(SolicitudLibroModel.estado == status)
         stmt = stmt.limit(limit).offset(offset)

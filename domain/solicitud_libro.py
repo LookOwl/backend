@@ -6,6 +6,6 @@ from domain.enums.estado_solicitud import EstadoSolicitud
 class BookRequest:
     id: Optional[int]
     user_id: int
-    copy_code: str
+    book_id: str
     wait_time: int
     status: EstadoSolicitud
