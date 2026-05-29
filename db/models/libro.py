@@ -10,6 +10,7 @@ from db.models.genero import Genero
 if TYPE_CHECKING:
     from db.models.ejemplar import Ejemplar
     from db.models.solicitud_libro import SolicitudLibro
+    from db.models.libro_embedding import LibroEmbedding
 
 libro_autores = Table("libro_autores", Base.metadata,
     Column("libro_id", ForeignKey("libros.id"), primary_key=True),
@@ -52,3 +53,4 @@ class Libro(BaseModel):
     generos: Mapped[list[Genero]] = relationship(secondary=libro_generos)
     ejemplares: Mapped[list[Ejemplar]] = relationship(back_populates="libro")
     solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="libro")
+    embedding: Mapped[LibroEmbedding] = relationship(back_populates="libro")

@@ -2,7 +2,7 @@ import os
 import sys
 from logging.config import fileConfig
 from dotenv import load_dotenv
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 from alembic import context
 from db.base import Base
 import db.models.libro
@@ -12,6 +12,7 @@ import db.models.ejemplar
 import db.models.usuario
 import db.models.prestamo
 import db.models.solicitud_libro
+import db.models.libro_embedding
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
@@ -52,6 +53,7 @@ def run_migrations_offline() -> None:
     )
 
     with context.begin_transaction():
+        context.execute("CREATE EXTENSION IF NOT EXISTS vector")
         context.run_migrations()
 
 
@@ -74,6 +76,7 @@ def run_migrations_online() -> None:
         )
 
         with context.begin_transaction():
+            connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
             context.run_migrations()
 
 

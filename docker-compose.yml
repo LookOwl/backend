@@ -1,6 +1,6 @@
 services:
   pos_db:
-    image: postgres:18
+    image: pgvector/pgvector:pg18
     container_name: library_database
     volumes:
       - postgres_data:/var/lib/postgresql/18/docker/
