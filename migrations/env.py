@@ -10,6 +10,8 @@ import db.models.autor
 import db.models.genero
 import db.models.ejemplar
 import db.models.usuario
+import db.models.prestamo
+import db.models.solicitud_libro
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 

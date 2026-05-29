@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, CheckConstraint
 from db.base import BaseModel
 from domain.enums.estado_prestamos import EstadoPrestamo
 from typing import Optional, TYPE_CHECKING
@@ -21,16 +21,21 @@ class Prestamo(BaseModel):
             - fecha_aprobacion: Fecha de aprobación asignada del préstamo.
             - fecha_vencimiento: Fecha de vencimiento programada del préstamo según la fecha de aprobación.
             - fecha_regreso: Fecha final de regreso del préstamo dado.
+            - dias_prestamo: Duración del préstamo en días (máximo 13).
             - estado: Estado actual del préstamo.
     """
 
     __tablename__ = "prestamos"
+    __table_args__ = (
+            CheckConstraint("dias_prestamo < 14", name="ck_prestamos_dias_prestamo"),
+        )
 
     codigo_ejemplar: Mapped[str] = mapped_column(ForeignKey("ejemplares.codigo"))
     id_usuario_asociado: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
     fecha_aprobacion: Mapped[Optional[date]]
     fecha_vencimiento: Mapped[Optional[date]]
     fecha_regreso: Mapped[Optional[date]]
+    dias_prestamo: Mapped[int]
     estado: Mapped[EstadoPrestamo] = mapped_column(default=EstadoPrestamo.PENDIENTE)
 
     usuario: Mapped[Usuario] = relationship(back_populates="prestamos")
