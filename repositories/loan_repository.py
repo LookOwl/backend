@@ -1,14 +1,14 @@
 from typing import Optional, Sequence
 from datetime import date, timedelta
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
-from db.models.prestamo import Prestamo
+from infrastructure.database.models.prestamo import Prestamo
 from domain.loan import Loan
 from domain.enums.estado_prestamos import EstadoPrestamo
 
 class LoanRepository:
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
     def _to_domain(self, prestamo_model: Prestamo) -> Loan:
@@ -32,20 +32,20 @@ class LoanRepository:
             estado=loan_entity.status,
         )
 
-    def create(self, loan_entity: Loan) -> Loan:
+    async def create(self, loan_entity: Loan) -> Loan:
         prestamo_model = self._to_model(loan_entity)
         self.db.add(prestamo_model)
-        self.db.commit()
-        self.db.refresh(prestamo_model)
+        await self.db.flush()
+        await self.db.refresh(prestamo_model)
         return self._to_domain(prestamo_model)
 
-    def get_by_id(self, loan_id: int) -> Optional[Loan]:
+    async def get_by_id(self, loan_id: int) -> Optional[Loan]:
         prestamo_model = self.db.get(Prestamo, loan_id)
         if prestamo_model is None:
             return None
         return self._to_domain(prestamo_model)
 
-    def list(
+    async def list(
         self,
         user_id: Optional[int] = None,
         copy_code: Optional[str] = None,
@@ -61,10 +61,11 @@ class LoanRepository:
         if status is not None:
             stmt = stmt.where(Prestamo.estado == status)
         stmt = stmt.limit(limit).offset(offset)
-        prestamos = self.db.execute(stmt).scalars().all()
+        result = await self.db.execute(stmt) 
+        prestamos = result.scalars().all()
         return [self._to_domain(prestamo) for prestamo in prestamos]
 
-    def count_active_by_user(self, user_id: int) -> int:
+    async def count_active_by_user(self, user_id: int) -> int:
         stmt = (
             select(func.count())
             .select_from(Prestamo)
@@ -73,56 +74,57 @@ class LoanRepository:
                 Prestamo.estado.in_([EstadoPrestamo.ACTIVO, EstadoPrestamo.PENDIENTE, EstadoPrestamo.VENCIDO]),
             )
         )
-        return self.db.execute(stmt).scalar_one()
+        result = await self.db.execute(stmt) 
+        return result.scalar_one()
 
-    def close(self, loan_id: int, return_date: date) -> Optional[Loan]:
-        prestamo_model = self.db.get(Prestamo, loan_id)
+    async def close(self, loan_id: int, return_date: date) -> Optional[Loan]:
+        prestamo_model = await self.db.get(Prestamo, loan_id)
         if prestamo_model is None:
             return None
 
         prestamo_model.estado = EstadoPrestamo.CONCLUIDO
         prestamo_model.fecha_regreso = return_date
-        self.db.commit()
-        self.db.refresh(prestamo_model)
+        await self.db.flush()
+        await self.db.refresh(prestamo_model)
         return self._to_domain(prestamo_model)
 
-    def approve(self, loan_id: int) -> Optional[Loan]:
-        prestamo_model = self.db.get(Prestamo, loan_id)
+    async def approve(self, loan_id: int) -> Optional[Loan]:
+        prestamo_model = await self.db.get(Prestamo, loan_id)
         if prestamo_model is None:
             return None
 
         prestamo_model.estado = EstadoPrestamo.ACTIVO
         prestamo_model.fecha_aprobacion = date.today()
         prestamo_model.fecha_vencimiento = date.today() + timedelta(days=prestamo_model.dias_prestamo)
-        self.db.commit()
-        self.db.refresh(prestamo_model)
+        await self.db.flush()
+        await self.db.refresh(prestamo_model)
         return self._to_domain(prestamo_model)
 
-    def mark_lost(self, loan_id: int) -> Optional[Loan]:
-        prestamo_model = self.db.get(Prestamo, loan_id)
+    async def mark_lost(self, loan_id: int) -> Optional[Loan]:
+        prestamo_model = await self.db.get(Prestamo, loan_id)
         if prestamo_model is None:
             return None
 
         prestamo_model.estado = EstadoPrestamo.PERDIDO
-        self.db.commit()
-        self.db.refresh(prestamo_model)
+        await self.db.flush()
+        await self.db.refresh(prestamo_model)
         return self._to_domain(prestamo_model)
 
-    def update_status(self, loan_id: int, status: EstadoPrestamo) -> Optional[Loan]:
-        prestamo_model = self.db.get(Prestamo, loan_id)
+    async def update_status(self, loan_id: int, status: EstadoPrestamo) -> Optional[Loan]:
+        prestamo_model = await self.db.get(Prestamo, loan_id)
         if prestamo_model is None:
             return None
 
         prestamo_model.estado = status
-        self.db.commit()
-        self.db.refresh(prestamo_model)
+        await self.db.flush()
+        await self.db.refresh(prestamo_model)
         return self._to_domain(prestamo_model)
 
-    def delete(self, loan_id: int) -> bool:
-        prestamo_model = self.db.get(Prestamo, loan_id)
+    async def delete(self, loan_id: int) -> bool:
+        prestamo_model = await self.db.get(Prestamo, loan_id)
         if prestamo_model is None:
             return False
 
         prestamo_model.estado = EstadoPrestamo.CANCELADO
-        self.db.commit()
+        await self.db.flush()
         return True

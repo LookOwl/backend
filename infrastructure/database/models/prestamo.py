@@ -2,13 +2,13 @@ from __future__ import annotations
 from datetime import date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, CheckConstraint
-from db.base import BaseModel
+from infrastructure.database.base import BaseModel
 from domain.enums.estado_prestamos import EstadoPrestamo
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from db.models.usuario import Usuario
-    from db.models.ejemplar import Ejemplar
+    from infrastructure.database.models.usuario import Usuario
+    from infrastructure.database.models.ejemplar import Ejemplar
 
 class Prestamo(BaseModel):
 
@@ -38,5 +38,5 @@ class Prestamo(BaseModel):
     dias_prestamo: Mapped[int]
     estado: Mapped[EstadoPrestamo] = mapped_column(default=EstadoPrestamo.PENDIENTE)
 
-    usuario: Mapped[Usuario] = relationship(back_populates="prestamos")
-    ejemplar: Mapped[Ejemplar] = relationship(back_populates="prestamos")
+    usuario: Mapped[Usuario] = relationship(back_populates="prestamos",lazy='joined')
+    ejemplar: Mapped[Ejemplar] = relationship(back_populates="prestamos",lazy='joined')

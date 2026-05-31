@@ -2,6 +2,7 @@ from typing import Annotated
 from annotated_types import Len, Ge
 from pydantic import StringConstraints, AfterValidator, AnyUrl
 from core.exceptions import InvalidISBNException
+from domain.enums.estado_prestamos import EstadoPrestamo
 
 NonemptyString = Annotated[
     str,

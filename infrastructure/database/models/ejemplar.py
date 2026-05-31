@@ -1,14 +1,14 @@
 from __future__ import annotations
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, String
-from db.base import BaseModel
+from infrastructure.database.base import BaseModel
 from domain.enums.estado_ejemplares import EstadoEjemplar
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from db.models.libro import Libro
-    from db.models.prestamo import Prestamo
-    from db.models.solicitud_libro import SolicitudLibro
+    from infrastructure.database.models.libro import Libro
+    from infrastructure.database.models.prestamo import Prestamo
+    from infrastructure.database.models.solicitud_libro import SolicitudLibro
 
 class Ejemplar(BaseModel):
 
@@ -26,6 +26,6 @@ class Ejemplar(BaseModel):
     codigo: Mapped[str] = mapped_column(String(50), unique=True)
     estado: Mapped[EstadoEjemplar] = mapped_column(default=EstadoEjemplar.DISPONIBLE)
 
-    libro: Mapped[Libro] = relationship(back_populates="ejemplares")
-    prestamos: Mapped[list[Prestamo]] = relationship(back_populates="ejemplar")
-    solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="ejemplar")
+    libro: Mapped[Libro] = relationship(back_populates="ejemplares",lazy='joined')
+    prestamos: Mapped[list[Prestamo]] = relationship(back_populates="ejemplar",lazy='selectin')
+    solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="ejemplar",lazy='selectin')

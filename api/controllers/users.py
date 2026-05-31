@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from api.dtos.login_dto import LoginDto , RegisterUserDto
 from services.auth_service import AuthService
-from services.exports.di import get_auth_service
+from dependencies.services import get_auth_service
 
 router = APIRouter(prefix="/users",tags=["users"])
 
