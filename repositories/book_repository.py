@@ -12,7 +12,7 @@ class BookRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def get_books(
+    async def get_books(
         self,
         title: Optional[str] = None,
         author: Optional[str] = None,
@@ -48,10 +48,11 @@ class BookRepository:
             query = query.where(Libro.fecha_publicacion <= to_date)
 
         query = query.distinct().order_by(Libro.id).offset(offset).limit(limit)
-        libros = list(self.db.execute(query).scalars().all())
+        result = await self.db.execute(query)
+        libros = list(result.scalars().all())
         return [self._to_domain(libro) for libro in libros]
 
-    def save_book(self, book: Book) -> Book:
+    async def save_book(self, book: Book) -> Book:
         self._validate_book(book)
         libro = Libro(
             titulo = book.title,
@@ -65,9 +66,11 @@ class BookRepository:
             autores = self._resolve_autores(book.author),
             generos = self._resolve_generos(book.category)
         )
+        
         self.db.add(libro)
-        self.db.commit()
-        self.db.refresh(libro)
+        await self.db.flush()
+        await self.db.refresh(libro)
+
         return self._to_domain(libro)
 
     def _validate_book(self, book: Book) -> None:

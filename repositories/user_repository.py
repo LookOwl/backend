@@ -1,15 +1,15 @@
 from domain.user import User, UserCredentials
 from domain.exceptions import UsuarioNoEncontrado
 from infrastructure.database.models.usuario import Usuario
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 class UserRepository:
 
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
-    def save_user(self, user: User) -> User:
+    async def save_user(self, user: User) -> User:
         orm_user = Usuario(
             nombre = user.full_name,
             email = user.email,
@@ -18,22 +18,24 @@ class UserRepository:
             rol = user.role
         )
         self.db.add(orm_user)
-        self.db.commit()
-        self.db.refresh(orm_user)
+        await self.db.flush()
+        await self.db.refresh(orm_user)
         return self._to_domain(orm_user)
 
-    def get_user_credentials(self, email : str) -> User:
+    async def get_user_credentials(self, email : str) -> User:
         query = select(Usuario).where(Usuario.email == email)
-        datos = self.db.execute(query).scalar()
+        result = await self.db.execute(query)
+        datos = result.scalar()
 
         if datos is None:
             raise UsuarioNoEncontrado(email)
 
         return self._to_domain(datos)
 
-    def get_user_by_id(self, id: int) -> User:
+    async def get_user_by_id(self, id: int) -> User:
         query = select(Usuario).where(Usuario.id == id)
-        datos = self.db.execute(query).scalar()
+        result = await self.db.execute(query)
+        datos = result.scalar()
 
         if datos is None:
             raise UsuarioNoEncontrado(str(id))

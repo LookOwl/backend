@@ -38,5 +38,5 @@ class Prestamo(BaseModel):
     dias_prestamo: Mapped[int]
     estado: Mapped[EstadoPrestamo] = mapped_column(default=EstadoPrestamo.PENDIENTE)
 
-    usuario: Mapped[Usuario] = relationship(back_populates="prestamos")
-    ejemplar: Mapped[Ejemplar] = relationship(back_populates="prestamos")
+    usuario: Mapped[Usuario] = relationship(back_populates="prestamos",lazy='joined')
+    ejemplar: Mapped[Ejemplar] = relationship(back_populates="prestamos",lazy='joined')

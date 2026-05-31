@@ -4,7 +4,9 @@ from repositories.book_copy_repository import BookCopyRepository
 from repositories.loan_repository import LoanRepository
 from repositories.solicitud_libro_repository import SolicitudLibroRepository
 from fastapi import Depends
-from infrastructure.database.connection import async_get_db_session
+from dependencies.infrastructure import async_get_db_session
+
+#Ya no creo que estos sean necesarios
 
 def get_user_repository(
     db = Depends(async_get_db_session)

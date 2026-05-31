@@ -26,6 +26,6 @@ class Ejemplar(BaseModel):
     codigo: Mapped[str] = mapped_column(String(50), unique=True)
     estado: Mapped[EstadoEjemplar] = mapped_column(default=EstadoEjemplar.DISPONIBLE)
 
-    libro: Mapped[Libro] = relationship(back_populates="ejemplares")
-    prestamos: Mapped[list[Prestamo]] = relationship(back_populates="ejemplar")
-    solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="ejemplar")
+    libro: Mapped[Libro] = relationship(back_populates="ejemplares",lazy='joined')
+    prestamos: Mapped[list[Prestamo]] = relationship(back_populates="ejemplar",lazy='selectin')
+    solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="ejemplar",lazy='selectin')

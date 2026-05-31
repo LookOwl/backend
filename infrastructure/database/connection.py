@@ -23,7 +23,3 @@ async_session_factory  = async_sessionmaker(
     autoflush=False,              
     autocommit=False,
 )
-
-async def async_get_db_session():
-    async with async_session_factory() as session:
-        yield session

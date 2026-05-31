@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-from api.dtos.loan_dto import UpdateLoanDto
 
 from services.loan_service import LoanService, LoanException
 from dependencies.services import get_loan_service
@@ -26,6 +25,7 @@ async def getLoans(limit:int = 20,offset:int = 0,loanService : LoanService = Dep
             detail="Service not available"
         )
 
+'''
 @router.post(path="/register")
 async def updateLoanStatus( loan: UpdateLoanDto, user : User = Depends(extract_user), loanService: LoanService = Depends(get_loan_service) ):
     if user.role != RolUsuario.BIBLIOTECARIO:
@@ -43,5 +43,5 @@ async def updateLoanStatus( loan: UpdateLoanDto, user : User = Depends(extract_u
     return {
         "loan_updated" : ok
     }
-
+'''
 

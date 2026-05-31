@@ -27,5 +27,5 @@ class SolicitudLibro(BaseModel):
     tiempo_espera: Mapped[int]
     estado: Mapped[EstadoSolicitud] = mapped_column(default=EstadoSolicitud.PENDIENTE)
 
-    usuario: Mapped[Usuario] = relationship(back_populates="solicitudes")
-    ejemplar: Mapped[Ejemplar] = relationship(back_populates="solicitudes")
+    usuario: Mapped[Usuario] = relationship(back_populates="solicitudes",lazy='joined')
+    ejemplar: Mapped[Ejemplar] = relationship(back_populates="solicitudes",lazy='joined')

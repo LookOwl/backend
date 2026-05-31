@@ -30,5 +30,5 @@ class Usuario(BaseModel):
     rol: Mapped[RolUsuario] = mapped_column(default=RolUsuario.LECTOR)
     hash_contrasena: Mapped[str] = mapped_column(String(255))
 
-    prestamos: Mapped[list[Prestamo]] = relationship(back_populates="usuario")
-    solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="usuario")
+    prestamos: Mapped[list[Prestamo]] = relationship(back_populates="usuario",lazy='selectin')
+    solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="usuario",lazy='selectin')

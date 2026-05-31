@@ -1,13 +1,10 @@
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING
 import jwt
 import bcrypt
 from fastapi import Security, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from dependencies.repositories import get_user_repository
+from dependencies.uow import get_unit_of_work
 
-if TYPE_CHECKING:
-    from services.auth_service import AuthService
 
 SECRET_KEY = "This is a secret key. Do not share with anyone under any circumstances"
 ALGORITHM = "HS256"
@@ -62,11 +59,10 @@ def decode_token(token : str):
 
 
 def _get_auth_service(
-    user_repo = Depends(get_user_repository)
+    uow = Depends(get_unit_of_work)
 ):
     from services.auth_service import AuthService
-
-    return AuthService(user_repo)
+    return AuthService(uow)
 
 
 async def extract_user(
@@ -75,6 +71,7 @@ async def extract_user(
 ):
     try:
         user = await auth_service.validateToken(credentials.credentials)
+        print(user)
         if user is None:
             raise ValueError
         return user
@@ -85,8 +82,8 @@ async def extract_user(
                 detail="Invalid token or user"
             )
 
-    except Exception:
+    except Exception as e:
         raise HTTPException(
             status_code=422,        #Unprocessable Entity
-            detail="Fatal error. ID might not be an int"
+            detail=f"Fatal error. User id might not be an int: {e.__str__()}"
         )
