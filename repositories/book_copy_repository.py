@@ -56,8 +56,6 @@ class BookCopyRepository:
             return None
 
         ejemplar.estado = status
-        self.db.commit()
-        self.db.refresh(ejemplar)
         return self._to_domain(ejemplar)
 
     def _to_domain(self, ejemplar: Ejemplar) -> BookCopy:

@@ -16,7 +16,7 @@ class LoanRepository:
             id=prestamo_model.id,
             user_id=prestamo_model.id_usuario_asociado,
             copy_code=prestamo_model.codigo_ejemplar,
-            loan_days=prestamo_model.dias_prestamo,
+            solicitud_id=prestamo_model.solicitud_id,
             approval_date=prestamo_model.fecha_aprobacion,
             due_date=prestamo_model.fecha_vencimiento,
             return_date=prestamo_model.fecha_regreso,
@@ -27,7 +27,7 @@ class LoanRepository:
         return Prestamo(
             id_usuario_asociado=loan_entity.user_id,
             codigo_ejemplar=loan_entity.copy_code,
-            dias_prestamo=loan_entity.loan_days,
+            solicitud_id=loan_entity.solicitud_id,
             fecha_regreso=loan_entity.return_date,
             estado=loan_entity.status,
         )
@@ -40,7 +40,7 @@ class LoanRepository:
         return self._to_domain(prestamo_model)
 
     async def get_by_id(self, loan_id: int) -> Optional[Loan]:
-        prestamo_model = self.db.get(Prestamo, loan_id)
+        prestamo_model = await self.db.get(Prestamo, loan_id)
         if prestamo_model is None:
             return None
         return self._to_domain(prestamo_model)
@@ -95,7 +95,7 @@ class LoanRepository:
 
         prestamo_model.estado = EstadoPrestamo.ACTIVO
         prestamo_model.fecha_aprobacion = date.today()
-        prestamo_model.fecha_vencimiento = date.today() + timedelta(days=prestamo_model.dias_prestamo)
+        prestamo_model.fecha_vencimiento = date.today() + timedelta(days=prestamo_model.solicitud.tiempo_prestamo)
         await self.db.flush()
         await self.db.refresh(prestamo_model)
         return self._to_domain(prestamo_model)

@@ -17,15 +17,21 @@ class SolicitudLibroRepository:
             id=model.id,
             user_id=model.id_usuario,
             book_id=model.id_libro,
+            copy_code=model.codigo_ejemplar,
             wait_time=model.tiempo_espera,
+            loan_time=model.tiempo_prestamo,
             status=model.estado,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
         )
 
     def _to_model(self, entity: BookRequest) -> SolicitudLibroModel:
         return SolicitudLibroModel(
             id_usuario=entity.user_id,
-            codigo_ejemplar=entity.book_id,
+            id_libro=entity.book_id,
+            codigo_ejemplar=entity.copy_code,
             tiempo_espera=entity.wait_time,
+            tiempo_prestamo=entity.loan_time,
             estado=entity.status,
         )
 
@@ -45,7 +51,7 @@ class SolicitudLibroRepository:
     async def list(
         self,
         user_id: Optional[int] = None,
-        book_id: Optional[str] = None,
+        book_id: Optional[int] = None,
         status: Optional[EstadoSolicitud] = None,
         limit: int = 50,
         offset: int = 0,
@@ -62,11 +68,12 @@ class SolicitudLibroRepository:
         models = result.scalars().all()
         return [self._to_domain(m) for m in models]
 
-    async def notify(self, solicitud_id: int) -> Optional[BookRequest]:
+    async def notify(self, solicitud_id: int, codigo_ejemplar: str) -> Optional[BookRequest]:
         model = await self.db.get(SolicitudLibroModel, solicitud_id)
         if model is None:
             return None
         model.estado = EstadoSolicitud.NOTIFICADA
+        model.codigo_ejemplar = codigo_ejemplar
         await self.db.flush()
         await self.db.refresh(model)
         return self._to_domain(model)
