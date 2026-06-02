@@ -50,4 +50,4 @@ Con el propósito de usar Redis, se han introducido:
 
 ### Orchestrator
 
-El patrón `Orchestrator` sirve para coordinar múttiples operaciones relacionadas a un caso de uso o conjuntos de casos de uso relacionados entre sí. En este caso, servirá cmo orquestador global entre las transacciones a la base de datos y el acceso a los indices de Redis.
+El patrón `Orchestrator` sirve para coordinar múttiples operaciones relacionadas a un caso de uso o conjuntos de casos de uso relacionados entre sí. En este caso, servirá como orquestador global entre las transacciones a la base de datos y el acceso a los indices de Redis.

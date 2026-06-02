@@ -3,6 +3,8 @@ from repositories.book_repository import BookRepository
 from repositories.loan_repository import LoanRepository
 from repositories.solicitud_libro_repository import SolicitudLibroRepository
 from repositories.user_repository import UserRepository
+from repositories.book_copy_repository import BookCopyRepository
+from repositories.book_embedding_repository import BookEmbeddingRepository
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +13,9 @@ class AppUnitOfWork:
     book_repo : BookRepository
     loan_repo : LoanRepository
     solicitud_libro_repo : SolicitudLibroRepository
-    user_repo : UserRepository    
+    user_repo : UserRepository
+    book_copy_repo : BookCopyRepository
+    book_embedd_repo : BookEmbeddingRepository     
     
     def __init__(
             self,
@@ -23,6 +27,9 @@ class AppUnitOfWork:
         self.loan_repo = LoanRepository(session)
         self.solicitud_libro_repo = SolicitudLibroRepository(session)
         self.user_repo = UserRepository(session)
+        self.book_copy_repo = BookCopyRepository(session)
+        self.book_embedd_repo = BookEmbeddingRepository(session)    
+    
     
     #Estas funciones son para el uso de la clase con las
     #cláusulas `async with`

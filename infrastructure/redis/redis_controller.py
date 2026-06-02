@@ -1,4 +1,4 @@
-from redis import Redis
+from redis.asyncio import Redis
 
 
 #TODO(Falta poner excepciones que sean entendibles para la capa que use esta clase, 
@@ -18,7 +18,7 @@ class RedisController:
 
     async def get_available_slots(self, book_id : int):
         try:
-            result = await self._redis.get(f"{book_id}_{self.AV_SLOTS_PREFIX}")
+            result = await self._redis.get(f"{book_id}:{self.AV_SLOTS_PREFIX}")
             result = int(result)
             return result
         except ValueError as e:
@@ -29,19 +29,19 @@ class RedisController:
         
     async def inc_available_slots(self, book_id : int):
         try:
-            return await self._redis.incr(f"{book_id}_{self.AV_SLOTS_PREFIX}")
+            return await self._redis.incr(f"{book_id}:{self.AV_SLOTS_PREFIX}")
         except Exception as e:
             raise e            
     
     async def dec_available_slots(self, book_id : int):
         try:
-            return await self._redis.decr(f"{book_id}_{self.AV_SLOTS_PREFIX}")
+            return await self._redis.decr(f"{book_id}:{self.AV_SLOTS_PREFIX}")
         except Exception as e:
             raise e
 
     async def get_total_copies(self, book_id : int):
         try:
-            result = await self._redis.get(f"{book_id}_{self.TOTAL_COPIES_PREFIX}")
+            result = await self._redis.get(f"{book_id}:{self.TOTAL_COPIES_PREFIX}")
             result = int(result)
             return result
         except ValueError as e:
@@ -53,20 +53,20 @@ class RedisController:
     
     async def inc_total_copies(self, book_id : int):
         try:
-            return await self._redis.incr(f"{book_id}_{self.TOTAL_COPIES_PREFIX}")
+            return await self._redis.incr(f"{book_id}:{self.TOTAL_COPIES_PREFIX}")
         except Exception as e:
             raise e
     
     async def dec_total_copies(self, book_id : int):
         try:
-            return await self._redis.decr(f"{book_id}_{self.TOTAL_COPIES_PREFIX}")
+            return await self._redis.decr(f"{book_id}:{self.TOTAL_COPIES_PREFIX}")
         except Exception as e:
             raise e
     
 
     async def init_index(self, book_id:int , total_copies : int, available_slots :int):
         try:
-            await self._redis.set(f"{book_id}_{self.AV_SLOTS_PREFIX}",available_slots)
-            await self._redis.set(f"{book_id}_{self.TOTAL_COPIES_PREFIX}",total_copies)
+            await self._redis.set(f"{book_id}:{self.AV_SLOTS_PREFIX}",available_slots)
+            await self._redis.set(f"{book_id}:{self.TOTAL_COPIES_PREFIX}",total_copies)
         except Exception as e:
             raise e

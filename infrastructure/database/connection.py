@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine
 )
 from sqlalchemy.orm import sessionmaker
-from infrastructure.database.config import settings
+from infrastructure.config.config import settings
 
 # Establecemos conexión con la base de datos
 engine = create_async_engine(

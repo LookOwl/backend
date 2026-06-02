@@ -35,6 +35,6 @@ def get_solicitud_libro_repository(
     return SolicitudLibroRepository(db)
 
 def get_book_embedding_repository(
-    db = Depends(get_db)
+    db = Depends(async_get_db_session)
 ):
     return BookEmbeddingRepository(db)

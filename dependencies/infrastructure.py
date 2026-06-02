@@ -1,9 +1,26 @@
+from fastapi import Request, Depends
 from infrastructure.database.connection import async_session_factory
+from redis.asyncio import Redis
+from infrastructure.redis.lock import RedisLockManager, RedisLock
+from infrastructure.redis.redis_controller import RedisController
 
 async def async_get_db_session():
     async with async_session_factory() as session:
         yield session
 
 
-async def async_get_redis_session():
-    pass
+def get_redis(request : Request):
+    return request.app.state.redis
+
+def get_redis_controller(
+        redis : Redis = Depends(get_redis)
+    ):
+    return RedisController(redis)
+
+def get_redis_lock_manager(
+    redis : Redis = Depends(get_redis)
+):
+    return RedisLockManager(
+        redis,
+        10
+    )
