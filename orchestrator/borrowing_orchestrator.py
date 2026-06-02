@@ -36,7 +36,7 @@ class BorrowingOrchestrator:
             else:
                 async with self._uow as uow:
                     uow.solicitud_libro_repo.create(req)
-                    self._redis_controller.inc_available_slots(book_id)
+                    self._redis_controller.dec_available_slots(book_id)
     
     async def cancel_request_in_queue(self, book_id: int, req_id : int ):
         async with self._uow as uow:
@@ -47,7 +47,7 @@ class BorrowingOrchestrator:
             #Si existe, entonces procedamos a borrarlo: Bloqueemos el índice de redis
             async with self._lock_manager.acquire(book_id):
                 uow.solicitud_libro_repo.cancel(book_id)
-                self._redis_controller.dec_available_slots(book_id)
+                self._redis_controller.inc_available_slots(book_id)
     
     async def assign_book_copy_to_request(self, book_id: int, req_id: int, book_copy_id : int):
         #Primero un lock sobre la base de datos: no queremos asignar un libro que quizás ya esté tomado
@@ -64,7 +64,7 @@ class BorrowingOrchestrator:
             # y modificar el estado del pedido en la base de datos
 
             async with self._lock_manager.acquire(str(book_id)):
-                uow.solicitud_libro_repo.notify()
+                uow.solicitud_libro_repo.notify() #Pendiente, el repositorio es el correcto?
 
 class NullObjectException(Exception) : pass
 class FullPriviledgeQueueException(Exception) : pass

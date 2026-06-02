@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sentence_transformers import SentenceTransformer
-from db.models.libro_embedding import LibroEmbedding
+from infrastructure.database.models.libro_embedding import LibroEmbedding
 from domain.book import Book
 from repositories.book_repository import BookRepository
 

@@ -1,5 +1,5 @@
 from fastapi import Depends
-from orchestrator.BorrowingOrchestrator import BorrowingOrchestrator
+from orchestrator.borrowing_orchestrator import BorrowingOrchestrator
 from dependencies.infrastructure import get_redis_controller, get_redis_lock_manager
 from dependencies.uow import get_unit_of_work
 
