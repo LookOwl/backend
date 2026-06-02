@@ -8,7 +8,7 @@ class Loan:
     id: Optional[int]
     user_id: int
     copy_code: str
-    loan_days: int
+    solicitud_id: int
     approval_date: Optional[date]
     due_date: Optional[date]
     return_date: Optional[date]
