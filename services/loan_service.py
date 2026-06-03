@@ -1,3 +1,4 @@
+from dependencies.uow import AppUnitOfWork
 from domain.loan import Loan
 from domain.user import User
 from repositories.loan_repository import LoanRepository
@@ -5,9 +6,9 @@ from repositories.loan_repository import LoanRepository
 class LoanService:
     def __init__(
             self,
-            loan_repo: LoanRepository
+            uow : AppUnitOfWork
         ):
-        self.loan_repo = loan_repo
+        self.uow = uow
 
     #Pagination not implemented at repository level
     def get_loans(self, limit:int, offset:int ):
@@ -16,5 +17,5 @@ class LoanService:
             return list
         except Exception:
             raise LoanException
-
+        
 class LoanException(Exception): pass

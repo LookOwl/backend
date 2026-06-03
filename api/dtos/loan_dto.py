@@ -4,5 +4,5 @@ from core.validators import NonNegativeInt, PositiveInt
 
 class LoanDto(BaseModel):
     book_id : int
-    interest_window : PositiveInt = 168 #Measured in hours: 24 = 1d. Default = 7*24 = 168
+    interest_window : PositiveInt = 2 #Measured in days. Default 2, max 13
     n_days_requested : PositiveInt

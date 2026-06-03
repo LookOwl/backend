@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from dependencies.services import get_book_service
+from dependencies.services import get_borrowing_service
 from core.security import extract_user 
 from services.book_service import BookService
 from api.dtos.book_dto import SearchBookDto, RegisterBookDto
@@ -8,6 +9,7 @@ from domain.user import User
 from domain.book import Book
 from core.exceptions import BookNotCreatedException
 from core.validators import PositiveInt
+from services.borrowing_service import BorrowingService
 
 router = APIRouter(prefix="/books",tags=["books"])
 
@@ -50,10 +52,14 @@ async def registerBook(info : RegisterBookDto, user : User = Depends(extract_use
     }
 
 @router.post("/borrow/{id}")
-async def borrowBook(loanDto : LoanDto, user : User = Depends(extract_user), bookService : BookService = Depends(get_book_service)):
+async def borrowBook(loanDto : LoanDto, user : User = Depends(extract_user), borrowService : BorrowingService = Depends(get_borrowing_service)):
     try:
-        created_loan = await bookService.borrowBook(loanDto, user)
-        return created_loan
+        await borrowService.create_loan_request(loanDto, user)
+        
+        return {
+            "result" : "ok"
+        }
+    
     except:
         raise HTTPException(
             status_code=403,

@@ -1,8 +1,10 @@
 from fastapi import Depends
 from services.auth_service import AuthService
 from services.book_service import BookService
-from services.loan_service import LoanService
 from dependencies.uow import get_unit_of_work
+from services.borrowing_service import BorrowingService
+from services.loan_service import LoanService
+from dependencies.orchestrator import get_borrowing_orchestrator
 from dependencies.repositories import get_book_repository
 from dependencies.repositories import get_loan_repository
 
@@ -21,3 +23,10 @@ def get_loan_service(
 
 ):
     return LoanService(uow)
+
+def get_borrowing_service(
+    orch = Depends(get_borrowing_orchestrator)
+):
+    return BorrowingService(orch)
+
+    

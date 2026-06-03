@@ -10,6 +10,13 @@ class BookCopyRepository:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
+    async def get_by_id(self, copy_code : str):
+        query = select(Ejemplar).where(Ejemplar.codigo == copy_code)
+        result = await self.db.execute(query)
+        ejemplar = result.scalars().first()
+        return self._to_domain(ejemplar)
+
+
     async def get_copies(self, libro_id: str) -> list[BookCopy]:
         query = select(Ejemplar).where(Ejemplar.libro_id == int(libro_id))
         
@@ -60,6 +67,7 @@ class BookCopyRepository:
 
     def _to_domain(self, ejemplar: Ejemplar) -> BookCopy:
         return BookCopy(
+            libro_id=ejemplar.libro_id,
             codigo=ejemplar.codigo,
             estado=ejemplar.estado
         )
