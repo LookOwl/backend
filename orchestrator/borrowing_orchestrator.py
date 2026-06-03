@@ -3,6 +3,7 @@ from infrastructure.redis.redis_controller import RedisController
 from infrastructure.redis.lock import RedisLockManager
 from domain.solicitud_libro import BookRequest, EstadoSolicitud
 from domain.book_copy import BookCopy, EstadoEjemplar
+from domain.loan import Loan, EstadoPrestamo
 from domain.user import User
 class BorrowingOrchestrator:
 
@@ -18,7 +19,7 @@ class BorrowingOrchestrator:
 
     async def submit_loan_request(self,book_id : int, user: User, req : BookRequest ):
         #Caso añadir un request a la cola. Lo primero es ver siquiera si el usuario puede añadir algo a la cola
-        
+        #TODO(Comprobar el número de dias)
         async with self._uow as uow:
             n_requests_in_queue = await uow.solicitud_libro_repo.list(user_id=user.uid,limit=3, status=EstadoSolicitud.PENDIENTE) 
         #Por el momento la única regla TODO(Verificar si añadir mas reglas)
@@ -49,7 +50,7 @@ class BorrowingOrchestrator:
                 uow.solicitud_libro_repo.cancel(book_id)
                 self._redis_controller.inc_available_slots(book_id)
     
-    async def assign_book_copy_to_request(self, book_id: int, req_id: int, book_copy_id : int):
+    async def assign_book_copy_to_request(self, book_id: int, req_id: int, book_copy_id : str):
         #Primero un lock sobre la base de datos: no queremos asignar un libro que quizás ya esté tomado
         async with self._uow as uow:
             #Checks sobre la copia física
@@ -63,8 +64,26 @@ class BorrowingOrchestrator:
             #Eso implica: reducir un índice de redis (el de total_copies) 
             # y modificar el estado del pedido en la base de datos
 
+            #TODO(PENDIENTE)
             async with self._lock_manager.acquire(str(book_id)):
-                uow.solicitud_libro_repo.notify() #Pendiente, el repositorio es el correcto?
+                await uow.loan_repo.create(
+                    Loan(
+                        None,
+                        request.user_id,
+                        book_copy_id
+                    )
+                )
+                await uow.solicitud_libro_repo.complete(req_id)
+                await self._redis_controller.dec_total_copies(book_id)
+
+    async def start_loan(self,loan_id : int):
+        async with self._uow as uow:
+            waiting_loan = await uow.loan_repo.get_by_id(loan_id)
+            if waiting_loan.status != EstadoPrestamo.PENDIENTE:
+                raise ForbiddenOperationException("El préstamo no está pendiente de inicio")
+            
+
+                
 
 class NullObjectException(Exception) : pass
 class FullPriviledgeQueueException(Exception) : pass
