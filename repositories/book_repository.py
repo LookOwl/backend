@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.models.autor import Autor
 from infrastructure.database.models.genero import Genero
 from infrastructure.database.models.libro import Libro
@@ -7,9 +7,10 @@ from domain.book import Book
 from datetime import date
 from typing import Optional
 
+
 class BookRepository:
 
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
     async def get_books(
@@ -55,18 +56,18 @@ class BookRepository:
     async def save_book(self, book: Book) -> Book:
         self._validate_book(book)
         libro = Libro(
-            titulo = book.title,
-            isbn = book.isbn,
-            descripcion = book.description,
-            editorial = book.editorial,
-            fecha_publicacion = book.publication_date,
-            url_portada = book.cover_url,
-            lenguaje = book.language,
-            num_paginas = book.page_count,
-            autores = self._resolve_autores(book.author),
-            generos = self._resolve_generos(book.category)
+            titulo=book.title,
+            isbn=book.isbn,
+            descripcion=book.description,
+            editorial=book.editorial,
+            fecha_publicacion=book.publication_date,
+            url_portada=book.cover_url,
+            lenguaje=book.language,
+            num_paginas=book.page_count,
+            autores=await self._resolve_autores(book.author),
+            generos=await self._resolve_generos(book.category),
         )
-        
+
         self.db.add(libro)
         await self.db.flush()
         await self.db.refresh(libro)
@@ -85,24 +86,26 @@ class BookRepository:
         if book.language and len(book.language) != 2:
             raise ValueError("El lenguaje del libro no es valido")
 
-    def _resolve_autores(self, nombres: list[str]) -> list[str]:
+    async def _resolve_autores(self, nombres: list[str]) -> list[Autor]:
         autores = []
         for nombre in nombres:
-            autor = self.db.execute(
+            result = await self.db.execute(
                 select(Autor).where(Autor.nombre == nombre)
-            ).scalar_one_or_none()
+            )
+            autor = result.scalar_one_or_none()
             if not autor:
                 autor = Autor(nombre=nombre)
                 self.db.add(autor)
             autores.append(autor)
         return autores
 
-    def _resolve_generos(self, nombres: list[str]):
+    async def _resolve_generos(self, nombres: list[str]) -> list[Genero]:
         generos = []
         for nombre in nombres:
-            genero = self.db.execute(
+            result = await self.db.execute(
                 select(Genero).where(Genero.nombre == nombre)
-            ).scalar_one_or_none()
+            )
+            genero = result.scalar_one_or_none()
             if not genero:
                 genero = Genero(nombre=nombre)
                 self.db.add(genero)
@@ -111,15 +114,15 @@ class BookRepository:
 
     def _to_domain(self, libro: Libro) -> Book:
         return Book(
-            id = libro.id,
-            title = libro.titulo,
-            isbn = libro.isbn if libro.isbn else "",
-            description = libro.descripcion if libro.descripcion else "",
-            editorial = libro.editorial if libro.editorial else "",
-            publication_date = libro.fecha_publicacion if libro.fecha_publicacion else date(0, 0, 0),
-            cover_url = libro.url_portada if libro.url_portada else "",
-            language = libro.lenguaje,
-            author = [autor.nombre for autor in libro.autores],
-            category = [genero.nombre for genero in libro.generos],
-            page_count = libro.num_paginas if libro.num_paginas else -1,
+            id=libro.id,
+            title=libro.titulo,
+            isbn=libro.isbn if libro.isbn else "",
+            description=libro.descripcion if libro.descripcion else "",
+            editorial=libro.editorial if libro.editorial else "",
+            publication_date=libro.fecha_publicacion if libro.fecha_publicacion else date.min,
+            cover_url=libro.url_portada if libro.url_portada else "",
+            language=libro.lenguaje,
+            author=[autor.nombre for autor in libro.autores],
+            category=[genero.nombre for genero in libro.generos],
+            page_count=libro.num_paginas if libro.num_paginas else -1,
         )

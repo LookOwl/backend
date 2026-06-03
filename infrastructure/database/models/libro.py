@@ -4,17 +4,16 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Table, Text, Column, ForeignKey
 from typing import Optional, TYPE_CHECKING
 
-    
 from infrastructure.database.base import Base, BaseModel
 from infrastructure.database.models.autor import Autor
 from infrastructure.database.models.genero import Genero
-from infrastructure.database.models.ejemplar import Ejemplar
-
 from infrastructure.database.models.solicitud_libro import SolicitudLibro
 from infrastructure.database.models.libro_embedding import LibroEmbedding
 
 if TYPE_CHECKING:
     from infrastructure.database.models.ejemplar import Ejemplar
+
+
 
 libro_autores = Table("libro_autores", Base.metadata,
     Column("libro_id", ForeignKey("libros.id"), primary_key=True),

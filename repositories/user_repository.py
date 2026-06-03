@@ -47,7 +47,7 @@ class UserRepository:
             password_hash = usuario.hash_contrasena
         )
         return User(
-            uid = str(usuario.id),
+            uid = usuario.id,
             full_name = usuario.nombre,
             email = usuario.email,
             contact_number= usuario.numero_contacto,
