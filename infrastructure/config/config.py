@@ -6,5 +6,8 @@ load_dotenv()
 
 class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv(key="DATABASE_URL", default="")
+    ASYNC_DATABASE_URL : str = os.getenv(key="ASYNC_DATABASE_URL", default="")
+    REDIS_URL : str = os.getenv(key="REDIS_URL",default="")
+    debug : bool = bool(os.getenv(key= "DEBUG_MODE",default=False))
 
 settings = Settings()

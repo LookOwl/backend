@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 
-from db.base import Base
+from infrastructure.database.base import Base
 from repositories.book_repository import BookRepository
 from domain.book import Book
 

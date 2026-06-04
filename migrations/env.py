@@ -4,15 +4,16 @@ from logging.config import fileConfig
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool, text
 from alembic import context
-from db.base import Base
-import db.models.libro
-import db.models.autor
-import db.models.genero
-import db.models.ejemplar
-import db.models.usuario
-import db.models.prestamo
-import db.models.solicitud_libro
-import db.models.libro_embedding
+
+from infrastructure.database.base import Base
+import infrastructure.database.models.libro
+import infrastructure.database.models.autor
+import infrastructure.database.models.genero
+import infrastructure.database.models.ejemplar
+import infrastructure.database.models.usuario
+import infrastructure.database.models.prestamo
+import infrastructure.database.models.solicitud_libro
+import infrastructure.database.models.libro_embedding
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 

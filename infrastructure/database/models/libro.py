@@ -3,14 +3,17 @@ from datetime import date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Table, Text, Column, ForeignKey
 from typing import Optional, TYPE_CHECKING
-from db.base import Base, BaseModel
-from db.models.autor import Autor
-from db.models.genero import Genero
+
+from infrastructure.database.base import Base, BaseModel
+from infrastructure.database.models.autor import Autor
+from infrastructure.database.models.genero import Genero
+from infrastructure.database.models.solicitud_libro import SolicitudLibro
+from infrastructure.database.models.libro_embedding import LibroEmbedding
 
 if TYPE_CHECKING:
-    from db.models.ejemplar import Ejemplar
-    from db.models.solicitud_libro import SolicitudLibro
-    from db.models.libro_embedding import LibroEmbedding
+    from infrastructure.database.models.ejemplar import Ejemplar
+
+
 
 libro_autores = Table("libro_autores", Base.metadata,
     Column("libro_id", ForeignKey("libros.id"), primary_key=True),
@@ -49,8 +52,8 @@ class Libro(BaseModel):
     lenguaje: Mapped[str] = mapped_column(String(2), default="es")
     num_paginas: Mapped[Optional[int]]
 
-    autores: Mapped[list[Autor]] = relationship(secondary=libro_autores)
-    generos: Mapped[list[Genero]] = relationship(secondary=libro_generos)
+    autores: Mapped[list[Autor]] = relationship(secondary=libro_autores, lazy="selectin")
+    generos: Mapped[list[Genero]] = relationship(secondary=libro_generos, lazy="selectin")
     ejemplares: Mapped[list[Ejemplar]] = relationship(back_populates="libro")
     solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="libro")
     embedding: Mapped[LibroEmbedding] = relationship(back_populates="libro")

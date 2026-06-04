@@ -1,29 +1,32 @@
 from fastapi import APIRouter, Depends, HTTPException
-from services.exports.di import get_book_service
-from core.security import extract_user 
+from core.auth_guard import user_auth_guard
+from dependencies.services import get_book_service, get_borrowing_service
 from services.book_service import BookService
 from api.dtos.book_dto import SearchBookDto, RegisterBookDto
+from api.dtos.loan_dto import LoanDto
 from domain.user import User
 from domain.book import Book
 from core.exceptions import BookNotCreatedException
+from core.validators import PositiveInt
+from services.borrowing_service import BorrowingService
 
 router = APIRouter(prefix="/books",tags=["books"])
 
 @router.get("/")
-async def getBooks(title:str | None = None,author:str | None= None,limit:int | None= None,offset:int | None= None, bookService : BookService = Depends(get_book_service) ):
-    query_limit = limit + 1 if limit is not None else None
+async def getBooks(title:str | None = None,author:str | None= None,limit:int=20,offset:int = 0, bookService : BookService = Depends(get_book_service) ):
+    query_limit = limit + 1
     result : list[Book] = await bookService.getBooks(SearchBookDto(
         title=title,
         author=author,
         limit=query_limit,
         offset=offset
     ))
-    print(result)
+    
     has_next = False
     next_cursor = None
-    if limit is not None and len(result) > limit:
+    if len(result) > limit:
         has_next = True
-        next_cursor = limit + offset if offset is not None else limit
+        next_cursor = limit + offset
         result.pop(-1)  
     return {
         "data" : result,
@@ -34,7 +37,7 @@ async def getBooks(title:str | None = None,author:str | None= None,limit:int | N
     }
 
 @router.post("/register")
-async def registerBook(info : RegisterBookDto, user : User = Depends(extract_user), service : BookService = Depends(get_book_service)):
+async def registerBook(info : RegisterBookDto, user : User = Depends(user_auth_guard), service : BookService = Depends(get_book_service)):
     try:
         id_created = await service.registerBook(info)
     except BookNotCreatedException as e:
@@ -46,3 +49,18 @@ async def registerBook(info : RegisterBookDto, user : User = Depends(extract_use
     return {
         "id" : id_created
     }
+
+@router.post("/borrow/{id}")
+async def borrowBook(loanDto : LoanDto, user : User = Depends(user_auth_guard), borrowService : BorrowingService = Depends(get_borrowing_service)):
+    try:
+        await borrowService.create_loan_request(loanDto, user)
+        
+        return {
+            "result" : "ok"
+        }
+    
+    except:
+        raise HTTPException(
+            status_code=403,
+            detail="Book cannot be borrowed"
+        )

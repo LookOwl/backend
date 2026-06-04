@@ -1,12 +1,12 @@
 from __future__ import annotations
 from sqlalchemy import ForeignKey, Index, String
-from db.base import BaseModel
+from infrastructure.database.base import BaseModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import VECTOR
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from db.models.libro import Libro
+    from infrastructure.database.models.libro import Libro
 
 class LibroEmbedding(BaseModel):
 
