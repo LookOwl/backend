@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from api.dtos.login_dto import LoginDto , RegisterUserDto
-from services.auth_service import AuthService
+from services.auth_service import AuthService, UserAlreadyExistsException, UnknownException
 from dependencies.services import get_auth_service
 
 router = APIRouter(prefix="/users",tags=["users"])
@@ -23,12 +23,17 @@ async def login(
 
 @router.post("/register")
 async def register(registerDto : RegisterUserDto, authService : AuthService = Depends(get_auth_service)):
-    success = await authService.registerUser(registerDto)
-    if(not success):
+    try:
+        success = await authService.registerUser(registerDto)
+        return {
+            "user_id" : success.uid,
+            "role" : success.role
+        }
+    except UserAlreadyExistsException:
         raise HTTPException(
             status_code=409,
-            detail="User could not be created"
+            detail="El email ya está registrado"
         )
-    return {
-        "success" : success
-    }
+    except UnknownException as e:
+        raise e #TODO(Quitar esto luego, sólo con propósitos de debug)
+    

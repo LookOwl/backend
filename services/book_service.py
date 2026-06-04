@@ -62,7 +62,6 @@ class BookService:
         try:
             async with self.uow as uow:
                 saved = await uow.book_repo.save_book(toCreate)
-                print(saved)
                 return saved.id
         except IntegrityError:
             raise BookNotCreatedException("ISBN already exists")

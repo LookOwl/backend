@@ -9,39 +9,45 @@ from redis.asyncio import Redis
 
 async def seed(redis : Redis):
     async with async_session_factory() as session:
-        redis_controller = RedisController(redis)
-        query = select(Libro.id)
-        #Obetener todos los ids de los libros en la base de datos
-        book_ids = await session.execute(query)
-        #Para cada uno de ellos
-        for book_id in book_ids.scalars():
+        await session.begin()
+        try:
+            redis_controller = RedisController(redis)
+            query = select(Libro.id)
+            #Obetener todos los ids de los libros en la base de datos
+            book_ids = await session.execute(query)
+            #Para cada uno de ellos
             
-            #Primero, calcular cuantas copias físicas disponibles existen
-            available_copies_id = (await session.execute(
-                select(
-                    func.count(Ejemplar.id)
-                ).where(
-                    Ejemplar.libro_id == book_id,
-                    Ejemplar.estado == EstadoEjemplar.DISPONIBLE
-                )
-            )).scalar_one()
-
-            #Número de solicitudes en la cola
-            n_total_requests = (await session.execute(
-                select(
-                    func.count(SolicitudLibro.id)
-                ).where(
-                    SolicitudLibro.id_libro == book_id
-                ).where(
-                    SolicitudLibro.estado == EstadoSolicitud.PENDIENTE
-                )
-            )).scalar_one()
+            for book_id in book_ids.scalars():
             
-            total_copies = available_copies_id
-            available_slots = total_copies - n_total_requests
+                #Primero, calcular cuantas copias físicas disponibles existen
+                available_copies_id = (await session.execute(
+                    select(
+                        func.count(Ejemplar.id)
+                    ).where(
+                        Ejemplar.libro_id == book_id,
+                        Ejemplar.estado == EstadoEjemplar.DISPONIBLE
+                    )
+                )).scalar_one()
 
-            await redis_controller.init_index(book_id,total_copies,available_slots)
+                #Número de solicitudes en la cola
+                n_total_requests = (await session.execute(
+                    select(
+                        func.count(SolicitudLibro.id)
+                    ).where(
+                        SolicitudLibro.id_libro == book_id
+                    ).where(
+                        SolicitudLibro.estado == EstadoSolicitud.PENDIENTE
+                    )
+                )).scalar_one()
+                
+                total_copies = available_copies_id
+                available_slots = total_copies - n_total_requests
 
+                await redis_controller.init_index(book_id,total_copies,available_slots)
+        except Exception as e:
+            print(e.__str__())
+            await session.rollback()
+        await session.commit()
 
             
                 

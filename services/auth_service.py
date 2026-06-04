@@ -3,6 +3,7 @@ from api.dtos.login_dto import RegisterUserDto
 from domain.user import User, UserCredentials
 from domain.enums.roles_usuario import RolUsuario
 from uow.ApplicationUOW import AppUnitOfWork
+from domain.exceptions import UsuarioNoEncontrado
 
 class AuthService:
     
@@ -35,24 +36,34 @@ class AuthService:
         
         async with self.uow as uow:
             user = await uow.user_repo.get_user_by_id(int(payload['sub']))
-            print(user)
         return user
 
     async def registerUser(self, userDto : RegisterUserDto):
         userDto.password = hash_password(password=userDto.password)
         try:
             async with self.uow as uow : 
-                await uow.user_repo.save_user(User(
-                    uid="",
-                    full_name=userDto.fullname,
-                    email=userDto.email,
-                    contact_number=userDto.contact_number,
-                    role=RolUsuario.LECTOR,
-                    credentials=UserCredentials(
-                        password_hash=userDto.password
-                    )
-                ))
-            return True
+                #Primero, comprobar que el usuario es nuevo. Si existe entonces no
+                # entrará a la cláusula except
+                try:
+                    #get_user_credentiales genera una excepción si no existe el usuario
+                    await uow.user_repo.get_user_credentials(userDto.email)
+                except UsuarioNoEncontrado:
+                    #Guardar el usuario entonces
+                    created_user = await uow.user_repo.save_user(User(
+                        uid="",
+                        full_name=userDto.fullname,
+                        email=userDto.email,
+                        contact_number=userDto.contact_number,
+                        role=userDto.role,
+                        credentials=UserCredentials(
+                            password_hash=userDto.password
+                        )
+                    ))
+                    return created_user
+            raise UserAlreadyExistsException()
         except Exception as e:
-            print(e)
-            return False
+            raise UnknownException(e)
+
+class UserAlreadyExistsException(Exception): pass
+class UserNotFoundException(Exception): pass
+class UnknownException(Exception): pass
