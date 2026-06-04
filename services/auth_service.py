@@ -34,8 +34,8 @@ class AuthService:
         payload = decode_token(token)
         
         async with self.uow as uow:
-            user = uow.user_repo.get_user_by_id(int(payload['sub']))
-        
+            user = await uow.user_repo.get_user_by_id(int(payload['sub']))
+            print(user)
         return user
 
     async def registerUser(self, userDto : RegisterUserDto):

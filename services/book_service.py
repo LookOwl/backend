@@ -17,31 +17,28 @@ class BookService:
             uow : AppUnitOfWork
         ) -> None:
         self.uow = uow
-        self.repo = uow.book_repo
-        self.loan_repo = uow.loan_repo
-        self.book_copy_repo = uow.solicitud_libro_repo
 
     async def getBooks(self,params : SearchBookDto) -> list[Book] :
         data = []
         
         if params.limit is not None and params.offset is not None:
-            async with self.uow :
-                data = await self.repo.get_books(
+            async with self.uow as uow :
+                data = await uow.book_repo.get_books(
                     title=params.title,
                     author=params.author,
                     limit=params.limit,
                     offset=params.offset
                 )
         elif params.limit is not None:
-            async with self.uow:
-                data = await self.repo.get_books(
+            async with self.uow as uow:
+                data = await uow.book_repo.get_books(
                     title=params.title,
                     author=params.author,
                     limit=params.limit
                 )
         else:
-            async with self.uow:
-                data = await self.repo.get_books(
+            async with self.uow as uow:
+                data = await uow.book_repo.get_books(
                     title=params.title,
                     author=params.author
                 )
@@ -63,12 +60,14 @@ class BookService:
             page_count=book.page_count
         )
         try:
-            async with self.uow:
-                saved = await self.repo.save_book(toCreate)
-            return saved.id
+            async with self.uow as uow:
+                saved = await uow.book_repo.save_book(toCreate)
+                print(saved)
+                return saved.id
         except IntegrityError:
             raise BookNotCreatedException("ISBN already exists")
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(e.__str__())
             raise BookNotCreatedException("Unknown exception")
         
     async def borrowBook(self,loanDto:LoanDto, user : User):

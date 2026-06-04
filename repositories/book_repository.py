@@ -1,5 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from infrastructure.database.models.autor import Autor
 from infrastructure.database.models.genero import Genero
 from infrastructure.database.models.libro import Libro
@@ -24,7 +25,10 @@ class BookRepository:
         limit: int = 20,
         offset: int = 0
     ) -> list[Book]:
-        query = select(Libro)
+        query = select(Libro).options(
+            selectinload(Libro.autores),
+            selectinload(Libro.generos),
+        )
 
         if title:
             query = query.where(Libro.titulo.ilike(f"%{title}%"))
@@ -55,6 +59,10 @@ class BookRepository:
 
     async def save_book(self, book: Book) -> Book:
         self._validate_book(book)
+        # Resolve or create Autor/Genero objects while session is open
+        resolved_autores = await self._resolve_autores(book.author)
+        resolved_generos = await self._resolve_generos(book.category)
+
         libro = Libro(
             titulo=book.title,
             isbn=book.isbn,
@@ -64,8 +72,8 @@ class BookRepository:
             url_portada=book.cover_url,
             lenguaje=book.language,
             num_paginas=book.page_count,
-            autores=await self._resolve_autores(book.author),
-            generos=await self._resolve_generos(book.category),
+            autores=resolved_autores,
+            generos=resolved_generos,
         )
 
         self.db.add(libro)
@@ -96,6 +104,8 @@ class BookRepository:
             if not autor:
                 autor = Autor(nombre=nombre)
                 self.db.add(autor)
+                await self.db.flush()
+            await self.db.refresh(autor)
             autores.append(autor)
         return autores
 
@@ -109,6 +119,8 @@ class BookRepository:
             if not genero:
                 genero = Genero(nombre=nombre)
                 self.db.add(genero)
+            await self.db.flush()
+            await self.db.refresh(genero)
             generos.append(genero)
         return generos
 

@@ -52,8 +52,8 @@ class Libro(BaseModel):
     lenguaje: Mapped[str] = mapped_column(String(2), default="es")
     num_paginas: Mapped[Optional[int]]
 
-    autores: Mapped[list[Autor]] = relationship(secondary=libro_autores)
-    generos: Mapped[list[Genero]] = relationship(secondary=libro_generos)
+    autores: Mapped[list[Autor]] = relationship(secondary=libro_autores, lazy="selectin")
+    generos: Mapped[list[Genero]] = relationship(secondary=libro_generos, lazy="selectin")
     ejemplares: Mapped[list[Ejemplar]] = relationship(back_populates="libro")
     solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="libro")
     embedding: Mapped[LibroEmbedding] = relationship(back_populates="libro")

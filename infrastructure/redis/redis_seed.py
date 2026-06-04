@@ -24,7 +24,7 @@ async def seed(redis : Redis):
                     Ejemplar.libro_id == book_id,
                     Ejemplar.estado == EstadoEjemplar.DISPONIBLE
                 )
-            )).scalars().all()
+            )).scalar_one()
 
             #Número de solicitudes en la cola
             n_total_requests = (await session.execute(
@@ -35,12 +35,12 @@ async def seed(redis : Redis):
                 ).where(
                     SolicitudLibro.estado == EstadoSolicitud.PENDIENTE
                 )
-            )).scalar()
+            )).scalar_one()
             
             total_copies = available_copies_id
             available_slots = total_copies - n_total_requests
 
-            redis_controller.init_index(book_id,total_copies,available_slots)
+            await redis_controller.init_index(book_id,total_copies,available_slots)
 
 
             

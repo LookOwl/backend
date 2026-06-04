@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from dependencies.services import get_book_service
-from dependencies.services import get_borrowing_service
-from core.security import extract_user 
+from core.auth_guard import user_auth_guard
+from dependencies.services import get_book_service, get_borrowing_service
 from services.book_service import BookService
 from api.dtos.book_dto import SearchBookDto, RegisterBookDto
 from api.dtos.loan_dto import LoanDto
@@ -38,7 +37,7 @@ async def getBooks(title:str | None = None,author:str | None= None,limit:int=20,
     }
 
 @router.post("/register")
-async def registerBook(info : RegisterBookDto, user : User = Depends(extract_user), service : BookService = Depends(get_book_service)):
+async def registerBook(info : RegisterBookDto, user : User = Depends(user_auth_guard), service : BookService = Depends(get_book_service)):
     try:
         id_created = await service.registerBook(info)
     except BookNotCreatedException as e:
@@ -52,7 +51,7 @@ async def registerBook(info : RegisterBookDto, user : User = Depends(extract_use
     }
 
 @router.post("/borrow/{id}")
-async def borrowBook(loanDto : LoanDto, user : User = Depends(extract_user), borrowService : BorrowingService = Depends(get_borrowing_service)):
+async def borrowBook(loanDto : LoanDto, user : User = Depends(user_auth_guard), borrowService : BorrowingService = Depends(get_borrowing_service)):
     try:
         await borrowService.create_loan_request(loanDto, user)
         

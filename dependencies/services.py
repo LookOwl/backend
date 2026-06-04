@@ -5,8 +5,6 @@ from dependencies.uow import get_unit_of_work
 from services.borrowing_service import BorrowingService
 from services.loan_service import LoanService
 from dependencies.orchestrator import get_borrowing_orchestrator
-from dependencies.repositories import get_book_repository
-from dependencies.repositories import get_loan_repository
 
 def get_auth_service(
     uow = Depends(get_unit_of_work)
