@@ -4,7 +4,7 @@ from dependencies.services import get_book_service, get_borrowing_service
 from services.book_service import BookService
 from api.dtos.book_dto import SearchBookDto, RegisterBookDto
 from api.dtos.loan_dto import LoanDto
-from domain.user import User
+from domain.user import User, RolUsuario
 from domain.book import Book
 from core.exceptions import BookNotCreatedException
 from core.validators import PositiveInt
@@ -38,17 +38,26 @@ async def getBooks(title:str | None = None,author:str | None= None,limit:int=20,
 
 @router.post("/register")
 async def registerBook(info : RegisterBookDto, user : User = Depends(user_auth_guard), service : BookService = Depends(get_book_service)):
-    try:
+    if user.role != RolUsuario.BIBLIOTECARIO:
+        raise HTTPException(
+            status_code=403,     #Forbidden
+            detail="Sólo bibliotecarios autorizados"
+        )
+    try: 
         id_created = await service.registerBook(info)
+        return {
+            "id" : id_created
+        }
     except BookNotCreatedException as e:
         raise HTTPException(
             status_code= 409,
-            detail=e.__str__()
+            detail="No se pudo crear el libro"
         )
-    
-    return {
-        "id" : id_created
-    }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail="Error fatal: {}".format(e.__str__())    #TODO(Retirar esto en produccion)
+        )
 
 @router.post("/borrow/{id}")
 async def borrowBook(loanDto : LoanDto, user : User = Depends(user_auth_guard), borrowService : BorrowingService = Depends(get_borrowing_service)):
