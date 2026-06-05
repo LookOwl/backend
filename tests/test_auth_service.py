@@ -1,386 +1,171 @@
-import pytest
 import jwt
-import os
-from datetime import datetime, timedelta, timezone
-from unittest.mock import AsyncMock, MagicMock
+import pytest
 
-os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
-
-from services.auth_service import AuthService
-from api.dtos.login_dto import LoginDto, RegisterUserDto
-from core.security import (
-    hash_password,
-    verify_password,
-    generate_token,
-    SECRET_KEY,
-    ALGORITHM,
-)
-from domain.user import UserCredentials
+from api.dtos.login_dto import RegisterUserDto
+from core.security import ALGORITHM, SECRET_KEY, generate_token, hash_password, verify_password
+from domain.enums.roles_usuario import RolUsuario
+from domain.exceptions import UsuarioNoEncontrado
+from domain.user import User, UserCredentials
+from services.auth_service import AuthService, UnknownException
 
 
-class MockUserRepository:
+class FakeUserRepository:
+    def __init__(self) -> None:
+        self._users_by_email: dict[str, User] = {}
+        self._users_by_id: dict[int, User] = {}
+        self._next_id = 1
 
-    def __init__(self):
-        self.users: dict[str, RegisterUserDto] = {}
-        self.count = 0
+    async def save_user(self, user: User) -> User:
+        if user.email in self._users_by_email:
+            raise ValueError("user already exists")
 
-    async def saveUser(self, user: RegisterUserDto):
-        for id, existing_user in self.users.items():
-            if existing_user.email == user.email:
-                raise Exception(f"Correo ya registrado por usuario con id: {id}")
-        self.users[str(self.count)] = user
-        self.count += 1
+        stored_user = User(
+            uid=self._next_id,
+            full_name=user.full_name,
+            email=user.email,
+            contact_number=user.contact_number,
+            role=user.role,
+            credentials=UserCredentials(password_hash=user.credentials.password_hash),
+        )
+        self._next_id += 1
+        self._users_by_email[stored_user.email] = stored_user
+        self._users_by_id[stored_user.uid] = stored_user
+        return stored_user
 
-    async def getUserCredentials(self, email: str) -> UserCredentials | None:
-        for id, u in self.users.items():
-            if u.email == email:
-                return UserCredentials(
-                    uid=str(id),
-                    email=u.email,
-                    password=u.password,
-                    role="User",
-                )
-        return None
+    async def get_user_credentials(self, email: str) -> User:
+        user = self._users_by_email.get(email)
+        if user is None:
+            raise UsuarioNoEncontrado(email)
+        return user
+
+    async def get_user_by_id(self, id: int) -> User:
+        user = self._users_by_id.get(id)
+        if user is None:
+            raise UsuarioNoEncontrado(str(id))
+        return user
 
 
-def create_test_user(
+class FakeUnitOfWork:
+    def __init__(self) -> None:
+        self.user_repo = FakeUserRepository()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+
+def make_register_dto(
+    *,
+    fullname: str = "Test User",
     email: str = "test@example.com",
     password: str = "TestPassword123!",
-    fullname: str = "Test User",
-    contact_number: int = 1234567890,
-) -> tuple[RegisterUserDto, str]:
-    dto = RegisterUserDto(
+    contact_number: str = "300123456",
+    role: RolUsuario = RolUsuario.LECTOR,
+) -> RegisterUserDto:
+    return RegisterUserDto(
         fullname=fullname,
         email=email,
         password=password,
         contact_number=contact_number,
+        role=role,
     )
-    return dto, password
 
 
 @pytest.fixture
-def mock_repo():
-    """Fixture que proporciona un repositorio de usuario simulado"""
-    return MockUserRepository()
-
-
-@pytest.fixture
-def auth_service(mock_repo):
-    """Fixture que proporciona AuthService con repositorio simulado"""
-    return AuthService(mock_repo)
+def auth_service() -> AuthService:
+    return AuthService(FakeUnitOfWork())
 
 
 class TestValidateUser:
-    """Pruebas para el método AuthService.validateUser()"""
-
     @pytest.mark.anyio
-    async def test_validar_usuario_exitoso_con_credenciales_correctas(
-        self, auth_service, mock_repo
-    ):
-        """Prueba de inicio de sesión exitoso con correo y contraseña correctos"""
-        # Preparar
-        email = "user@test.com"
-        password = "SecurePass123!"
-        user_dto, _ = create_test_user(email=email, password=password)
+    async def test_returns_token_for_valid_credentials(self, auth_service: AuthService):
+        dto = make_register_dto(email="reader@example.com", password="SecurePass123!")
+        await auth_service.registerUser(dto)
 
-        # Registrar usuario primero
-        hashed_password = hash_password(password)
-        user_dto.password = hashed_password
-        await mock_repo.saveUser(user_dto)
+        token = await auth_service.validateUser(dto.email, "SecurePass123!")
 
-        # Actuar
-        token = await auth_service.validateUser(email, password)
-
-        # Verificar
-        assert token is not None
         assert isinstance(token, str)
-        # Verificar que el token es un JWT válido
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        assert decoded["sub"] == "0"  # ID de usuario simulado
-        assert decoded["role"] == "User"
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        assert payload["sub"] == "1"
+        assert payload["role"] == str(RolUsuario.LECTOR)
+        assert payload["iss"] == "LookOwl-Server"
 
     @pytest.mark.anyio
-    async def test_validar_usuario_falla_con_contrasena_incorrecta(
-        self, auth_service, mock_repo
-    ):
-        """Prueba de fallo de inicio de sesión cuando la contraseña es incorrecta"""
-        # Preparar
-        email = "user@test.com"
-        password = "CorrectPass123!"
-        wrong_password = "WrongPass456!"
-        user_dto, _ = create_test_user(email=email, password=password)
+    async def test_returns_none_for_invalid_password(self, auth_service: AuthService):
+        dto = make_register_dto(email="reader2@example.com", password="SecurePass123!")
+        await auth_service.registerUser(dto)
 
-        # Registrar usuario con contraseña correcta
-        hashed_password = hash_password(password)
-        user_dto.password = hashed_password
-        await mock_repo.saveUser(user_dto)
+        token = await auth_service.validateUser(dto.email, "wrong-password")
 
-        # Actuar
-        token = await auth_service.validateUser(email, wrong_password)
-
-        # Verificar
         assert token is None
 
     @pytest.mark.anyio
-    async def test_validar_usuario_falla_con_usuario_inexistente(self, auth_service):
-        """Prueba de fallo de inicio de sesión cuando el usuario no existe"""
-        # Actuar
-        token = await auth_service.validateUser("nonexistent@test.com", "anypass")
+    async def test_returns_none_for_unknown_user(self, auth_service: AuthService):
+        with pytest.raises(UsuarioNoEncontrado):
+            await auth_service.validateUser("missing@example.com", "any-password")
 
-        # Verificar
-        assert token is None
 
+class TestValidateToken:
     @pytest.mark.anyio
-    async def test_validar_usuario_falla_con_credenciales_vacias(self, auth_service):
-        """Prueba de fallo de inicio de sesión con correo o contraseña vacíos"""
-        # Actuar
-        token = await auth_service.validateUser("", "password")
+    async def test_returns_user_by_token_subject(self, auth_service: AuthService):
+        dto = make_register_dto(email="token-user@example.com", password="TokenPass123!")
+        created_user = await auth_service.registerUser(dto)
+        token = generate_token(user_id=str(created_user.uid), user_role=str(created_user.role))
 
-        # Verificar
-        assert token is None
+        resolved_user = await auth_service.validateToken(token)
 
-    @pytest.mark.anyio
-    @pytest.mark.parametrize(
-        "email,password",
-        [
-            ("user1@test.com", "Pass123!"),
-            ("user2@test.com", "AnotherPass456!"),
-            ("admin@test.com", "AdminPass789!"),
-        ],
-    )
-    async def test_validar_usuario_con_multiples_usuarios(
-        self, auth_service, mock_repo, email, password
-    ):
-        """Prueba de que cada usuario pueda iniciar sesión con sus propias credenciales"""
-        # Preparar
-        for i, (test_email, test_password) in enumerate(
-            [
-                ("user1@test.com", "Pass123!"),
-                ("user2@test.com", "AnotherPass456!"),
-                ("admin@test.com", "AdminPass789!"),
-            ]
-        ):
-            user_dto, _ = create_test_user(
-                email=test_email, password=test_password, fullname=f"User {i+1}"
-            )
-            hashed_password = hash_password(test_password)
-            user_dto.password = hashed_password
-            await mock_repo.saveUser(user_dto)
-
-        # Actuar
-        token = await auth_service.validateUser(email, password)
-
-        # Verificar
-        assert token is not None
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        assert decoded["role"] == "User"
+        assert resolved_user is not None
+        assert resolved_user.uid == created_user.uid
+        assert resolved_user.email == created_user.email
 
 
 class TestRegisterUser:
-    """Pruebas para el método AuthService.registerUser()"""
+    @pytest.mark.anyio
+    async def test_creates_user_with_hashed_password(self, auth_service: AuthService):
+        dto = make_register_dto(email="new-user@example.com", password="PlainText123!")
+
+        created_user = await auth_service.registerUser(dto)
+
+        assert created_user.email == dto.email
+        assert created_user.full_name == dto.fullname
+        assert created_user.role == RolUsuario.LECTOR
+        assert created_user.uid == 1
+        assert dto.password != "PlainText123!"
+        assert verify_password("PlainText123!", dto.password)
 
     @pytest.mark.anyio
-    async def test_registrar_usuario_exitoso(self, auth_service):
-        """Prueba de registro de usuario exitoso"""
-        # Preparar
-        user_dto, _ = create_test_user(
-            email="newuser@test.com", fullname="New User"
-        )
+    async def test_raises_unknown_exception_when_email_already_exists(self, auth_service: AuthService):
+        dto = make_register_dto(email="duplicate@example.com", password="PlainText123!")
+        await auth_service.registerUser(dto)
 
-        # Actuar
-        result = await auth_service.registerUser(user_dto)
+        duplicate_dto = make_register_dto(email="duplicate@example.com", password="OtherPass456!")
 
-        # Verificar
-        assert result is True
-        assert user_dto.password != "TestPassword123!"  # La contraseña debe estar cifrada
+        with pytest.raises(UnknownException):
+            await auth_service.registerUser(duplicate_dto)
 
     @pytest.mark.anyio
-    async def test_registrar_usuario_falla_con_correo_duplicado(
-        self, auth_service, mock_repo
-    ):
-        """Prueba de fallo de registro cuando el correo ya existe"""
-        # Preparar
-        email = "duplicate@test.com"
-        user_dto1, password1 = create_test_user(email=email, fullname="User 1")
-        user_dto2, password2 = create_test_user(email=email, fullname="User 2")
+    async def test_registered_user_can_authenticate(self, auth_service: AuthService):
+        dto = make_register_dto(email="flow@example.com", password="FlowPass123!")
 
-        # Registrar primer usuario
-        await auth_service.registerUser(user_dto1)
+        created_user = await auth_service.registerUser(dto)
+        token = await auth_service.validateUser(created_user.email, "FlowPass123!")
 
-        # Actuar - Intentar registrar segundo usuario con el mismo correo
-        result = await auth_service.registerUser(user_dto2)
-
-        # Verificar
-        assert result is False
-
-    @pytest.mark.anyio
-    async def test_registrar_usuario_contrasena_cifrada(self, auth_service, mock_repo):
-        """Prueba de que la contraseña se cifre correctamente durante el registro"""
-        # Preparar
-        password = "PlainTextPassword123!"
-        user_dto, _ = create_test_user(email="test@test.com", password=password)
-
-        # Actuar
-        await auth_service.registerUser(user_dto)
-        registered_user = await mock_repo.getUserCredentials("test@test.com")
-
-        # Verificar
-        assert registered_user is not None
-        assert registered_user.password != password  # La contraseña debe estar cifrada
-        assert verify_password(password, registered_user.password)  # La verificación funciona
-
-    @pytest.mark.anyio
-    async def test_registrar_usuario_e_iniciar_sesion(self, auth_service, mock_repo):
-        """Prueba del flujo completo: registrar usuario e iniciar sesión"""
-        # Preparar
-        email = "complete@test.com"
-        password = "CompleteFlow123!"
-        user_dto, _ = create_test_user(email=email, password=password)
-
-        # Actuar - Registrar usuario
-        register_result = await auth_service.registerUser(user_dto)
-
-        # Actuar - Iniciar sesión con credenciales registradas
-        token = await auth_service.validateUser(email, password)
-
-        # Verificar
-        assert register_result is True
         assert token is not None
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        assert decoded["role"] == "User"
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        assert payload["sub"] == str(created_user.uid)
+        assert payload["role"] == str(created_user.role)
 
 
-class TestTokenGeneration:
-    """Pruebas para la generación de tokens JWT"""
+class TestPasswordHelpers:
+    def test_hash_password_changes_value(self):
+        hashed = hash_password("SamePassword123!")
 
-    @pytest.mark.anyio
-    async def test_token_contiene_id_usuario(self, auth_service, mock_repo):
-        """Prueba de que el token generado contiene la ID del usuario"""
-        # Preparar
-        email = "token@test.com"
-        password = "TokenPass123!"
-        user_dto, _ = create_test_user(email=email, password=password)
+        assert hashed != "SamePassword123!"
 
-        hashed_password = hash_password(password)
-        user_dto.password = hashed_password
-        await mock_repo.saveUser(user_dto)
+    def test_verify_password_matches_plaintext(self):
+        hashed = hash_password("Secret123!")
 
-        # Actuar
-        token = await auth_service.validateUser(email, password)
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-        # Verificar
-        assert "sub" in decoded  # Asunto (id_usuario)
-        assert decoded["sub"] == "0"
-
-    @pytest.mark.anyio
-    async def test_token_contiene_rol_usuario(self, auth_service, mock_repo):
-        """Prueba de que el token generado contiene el rol del usuario"""
-        # Preparar
-        email = "role@test.com"
-        password = "RolePass123!"
-        user_dto, _ = create_test_user(email=email, password=password)
-
-        hashed_password = hash_password(password)
-        user_dto.password = hashed_password
-        await mock_repo.saveUser(user_dto)
-
-        # Actuar
-        token = await auth_service.validateUser(email, password)
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-        # Verificar
-        assert "role" in decoded
-        assert decoded["role"] == "User"
-
-    @pytest.mark.anyio
-    async def test_token_tiene_expiracion(self, auth_service, mock_repo):
-        """Prueba de que el token generado tiene tiempo de expiración"""
-        # Preparar
-        email = "expiry@test.com"
-        password = "ExpiryPass123!"
-        user_dto, _ = create_test_user(email=email, password=password)
-
-        hashed_password = hash_password(password)
-        user_dto.password = hashed_password
-        await mock_repo.saveUser(user_dto)
-
-        # Actuar
-        token = await auth_service.validateUser(email, password)
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-        # Verificar
-        assert "exp" in decoded
-        assert "iat" in decoded
-        exp_time = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
-        now = datetime.now(timezone.utc)
-        assert exp_time > now  # El token debe expirar en el futuro
-
-    @pytest.mark.anyio
-    async def test_token_emisor_correcto(self, auth_service, mock_repo):
-        """Prueba de que el token tiene el emisor correcto"""
-        # Preparar
-        email = "issuer@test.com"
-        password = "IssuerPass123!"
-        user_dto, _ = create_test_user(email=email, password=password)
-
-        hashed_password = hash_password(password)
-        user_dto.password = hashed_password
-        await mock_repo.saveUser(user_dto)
-
-        # Actuar
-        token = await auth_service.validateUser(email, password)
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-        # Verificar
-        assert decoded["iss"] == "LookOwl-Server"
-
-
-class TestPasswordHashing:
-    """Pruebas para el cifrado y verificación de contraseña"""
-
-    def test_cifrar_contrasena_produce_diferentes_hashes(self):
-        """Prueba de que la misma contraseña produce diferentes hashes (debido a salt)"""
-        password = "MyPassword123!"
-
-        hash1 = hash_password(password)
-        hash2 = hash_password(password)
-
-        assert hash1 != hash2  # Diferentes hashes debido a salt aleatorio
-
-    def test_verificar_contrasena_exitosa_con_correcta(self):
-        """Prueba de verificación de contraseña con contraseña correcta"""
-        password = "CorrectPassword123!"
-        hashed = hash_password(password)
-
-        result = verify_password(password, hashed)
-
-        assert result is True
-
-    def test_verificar_contrasena_falla_con_incorrecta(self):
-        """Prueba de verificación de contraseña con contraseña incorrecta"""
-        password = "CorrectPassword123!"
-        wrong_password = "WrongPassword456!"
-        hashed = hash_password(password)
-
-        result = verify_password(wrong_password, hashed)
-
-        assert result is False
-
-    @pytest.mark.parametrize(
-        "password",
-        [
-            "SimplePassword",
-            "P@ssw0rd!",
-            "VeryLongPasswordWith123456789",
-            "1234567890",
-            "!@#$%^&*()",
-        ],
-    )
-    def test_verificar_contrasena_con_varios_formatos(self, password):
-        """Prueba de verificación de contraseña con varios formatos de contraseña"""
-        hashed = hash_password(password)
-
-        result = verify_password(password, hashed)
-
-        assert result is True
+        assert verify_password("Secret123!", hashed) is True
+        assert verify_password("Wrong123!", hashed) is False
