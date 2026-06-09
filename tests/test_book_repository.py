@@ -1,8 +1,8 @@
 import pytest
 from datetime import date
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from infrastructure.database.base import Base
 from repositories.book_repository import BookRepository
@@ -10,20 +10,29 @@ from domain.book import Book
 
 
 @pytest.fixture
-def db_session():
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(bind=engine)
-    SessionLocal = sessionmaker(bind=engine)
-    session = SessionLocal()
-    try:
+async def db_session():
+    import infrastructure.database.models.usuario  
+    import infrastructure.database.models.libro  
+    import infrastructure.database.models.ejemplar  
+    import infrastructure.database.models.prestamo  
+    import infrastructure.database.models.solicitud_libro  
+    import infrastructure.database.models.autor  
+    import infrastructure.database.models.genero  
+    import infrastructure.database.models.libro_embedding  
+
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
+    async with AsyncSessionLocal() as session:
         yield session
-    finally:
-        session.close()
 
 
 def crear_libro(**overrides) -> Book:
     return Book(
-        id=overrides.get("uid", "1"),
+        id=overrides.get("uid", 0),
         title=overrides.get("title", "Libro de Prueba"),
         isbn=overrides.get("isbn", "1111111111111"),
         description=overrides.get("description", "Descripción de prueba"),
@@ -34,15 +43,15 @@ def crear_libro(**overrides) -> Book:
         author=overrides.get("author", ["John Smith"]),
         category=overrides.get("category", ["Python"]),
         page_count=overrides.get("page_count", 123),
-        n_copies=overrides.get("n_copies", 1),
     )
 
 
-def test_guardar_libro_valido(db_session):
+@pytest.mark.asyncio
+async def test_guardar_libro_valido(db_session: AsyncSession):
     repo = BookRepository(db_session)
-    book = crear_libro(uid="1", isbn="1111111111111")
+    book = crear_libro(uid=1, isbn="1111111111111")
 
-    saved = repo.save_book(book)
+    saved = await repo.save_book(book)
 
     assert saved.title == book.title
     assert saved.isbn == book.isbn
@@ -50,15 +59,16 @@ def test_guardar_libro_valido(db_session):
     assert "Python" in saved.category
 
 
-def test_guardar_libro_isbn_duplicado_error(db_session):
+@pytest.mark.asyncio
+async def test_guardar_libro_isbn_duplicado_error(db_session: AsyncSession):
     repo = BookRepository(db_session)
-    book1 = crear_libro(uid="1", isbn="2222222222222")
-    book2 = crear_libro(uid="2", isbn="2222222222222")
+    book1 = crear_libro(uid=1, isbn="2222222222222")
+    book2 = crear_libro(uid=2, isbn="2222222222222")
 
-    repo.save_book(book1)
+    await repo.save_book(book1)
 
     with pytest.raises(IntegrityError):
-        repo.save_book(book2)
+        await repo.save_book(book2)
 
 
 @pytest.mark.parametrize(
@@ -72,11 +82,12 @@ def test_guardar_libro_isbn_duplicado_error(db_session):
         {"language": "spa"},
     ],
 )
-def test_guardar_libro_datos_invalidos_error(db_session, overrides):
+@pytest.mark.asyncio
+async def test_guardar_libro_datos_invalidos_error(db_session: AsyncSession, overrides):
     repo = BookRepository(db_session)
-    datos = {"uid": "1", "isbn": "3333333333333"}
+    datos = {"uid": 1, "isbn": "3333333333333"}
     datos.update(overrides)
     book = crear_libro(**datos)
 
     with pytest.raises(ValueError):
-        repo.save_book(book)
+        await repo.save_book(book)
