@@ -1,5 +1,5 @@
 from enum import Enum
 
 class RolUsuario(Enum):
-    BIBLIOTECARIO = "bibliotecario"
-    LECTOR = "lector"
+    BIBLIOTECARIO = "BIBLIOTECARIO"
+    LECTOR = "LECTOR"

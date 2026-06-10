@@ -1,9 +1,9 @@
 from enum import Enum
 
 class EstadoPrestamo(Enum):
-    PENDIENTE = "pendiente"
-    CANCELADO = "cancelado"
-    ACTIVO = "activo"
-    CONCLUIDO = "concluido"
-    PERDIDO = "perdido"
-    VENCIDO = "vencido"
+    PENDIENTE = "PENDIENTE"
+    CANCELADO = "CANCELADO"
+    ACTIVO = "ACTIVO"
+    CONCLUIDO = "CONCLUIDO"
+    PERDIDO = "PERDIDO"
+    VENCIDO = "VENCIDO"
