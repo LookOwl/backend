@@ -62,6 +62,15 @@ class BookService:
         try:
             async with self.uow as uow:
                 saved = await uow.book_repo.save_book(toCreate)
+                
+                # Generar embeddings para el libro recién creado
+                await uow.book_embedd_repo.create(
+                    book_id=saved.id,
+                    title=saved.title,
+                    description=saved.description,
+                    categories=saved.category
+                )
+                
                 return saved.id
         except IntegrityError:
             raise BookNotCreatedException("ISBN already exists")
