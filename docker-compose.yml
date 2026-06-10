@@ -31,6 +31,20 @@ services:
     ports:
       - "8000:8000"
     env_file: .env.docker
+    volumes:
+      - ./api:/app/api:z
+      - ./core:/app/core:z
+      - ./domain:/app/domain:z
+      - ./infrastructure:/app/infrastructure:z
+      - ./orchestrator:/app/orchestrator:z
+      - ./repositories:/app/repositories:z
+      - ./services:/app/services:z
+      - ./uow:/app/uow:z
+      - ./dependencies:/app/dependencies:z
+      - ./migrations:/app/migrations:z
+      - ./main.py:/app/main.py:z
+      - ./alembic.ini:/app/alembic.ini:z
+    command: ["sh", "-c", "fastapi run main.py --host 0.0.0.0 --port ${PORT:-8000} --reload"]
     depends_on:
       migrate:
         condition: service_completed_successfully

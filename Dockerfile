@@ -10,8 +10,11 @@ ENV UV_COMPILE_BYTECODE=1 \
 
 WORKDIR /app
 
+# Copy dependency files first for layer caching
+COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
 
+# Copy the rest of the source code
 COPY . /app
 
 RUN uv sync --frozen --no-dev
