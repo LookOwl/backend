@@ -42,15 +42,13 @@ class AuthService:
         userDto.password = hash_password(password=userDto.password)
         try:
             async with self.uow as uow : 
-                #Primero, comprobar que el usuario es nuevo. Si existe entonces no
-                # entrará a la cláusula except
+                # Comprobar que el usuario no exista ya
                 try:
-                    #get_user_credentiales genera una excepción si no existe el usuario
                     await uow.user_repo.get_user_credentials(userDto.email)
                 except UsuarioNoEncontrado:
-                    #Guardar el usuario entonces
+                    # El usuario no existe, proceder a guardarlo
                     created_user = await uow.user_repo.save_user(User(
-                        uid="",
+                        uid=0,
                         full_name=userDto.fullname,
                         email=userDto.email,
                         contact_number=userDto.contact_number,
@@ -60,7 +58,11 @@ class AuthService:
                         )
                     ))
                     return created_user
-            raise UserAlreadyExistsException()
+                # Si no se lanzó UsuarioNoEncontrado, el email ya está registrado
+                raise UserAlreadyExistsException()
+        except UserAlreadyExistsException:
+            # No envolver esta excepción — el controlador la maneja como 409
+            raise
         except Exception as e:
             raise UnknownException(e)
 
