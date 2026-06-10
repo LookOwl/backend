@@ -24,9 +24,9 @@ class Usuario(BaseModel):
 
     __tablename__ = "usuarios"
 
-    nombre: Mapped[str] = mapped_column(String(30))
-    email: Mapped[str] = mapped_column(String(30), unique=True)
-    numero_contacto: Mapped[str] = mapped_column(String(11))
+    nombre: Mapped[str] = mapped_column(String(255))
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    numero_contacto: Mapped[str] = mapped_column(String(9))
     rol: Mapped[RolUsuario] = mapped_column(default=RolUsuario.LECTOR)
     hash_contrasena: Mapped[str] = mapped_column(String(255))
 
