@@ -136,13 +136,14 @@ class TestRegisterUser:
         assert verify_password("PlainText123!", dto.password)
 
     @pytest.mark.anyio
-    async def test_raises_unknown_exception_when_email_already_exists(self, auth_service: AuthService):
+    async def test_raises_user_already_exists_exception_when_email_already_exists(self, auth_service: AuthService):
         dto = make_register_dto(email="duplicate@example.com", password="PlainText123!")
         await auth_service.registerUser(dto)
 
         duplicate_dto = make_register_dto(email="duplicate@example.com", password="OtherPass456!")
 
-        with pytest.raises(UnknownException):
+        from services.auth_service import UserAlreadyExistsException
+        with pytest.raises(UserAlreadyExistsException):
             await auth_service.registerUser(duplicate_dto)
 
     @pytest.mark.anyio

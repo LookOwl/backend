@@ -26,7 +26,7 @@ class AuthService:
         
         if (user is not None) and verify_password(password,user.credentials.password_hash):
             # Pequeña corrección al cambiar el tipo de user.role, al convertirlo a str
-            token = generate_token(user_id=user.uid,user_role=str(user.role))
+            token = generate_token(user_id=user.uid,user_role=user.role.value)
             return token
         
         return None
