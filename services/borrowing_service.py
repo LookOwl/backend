@@ -14,7 +14,7 @@ class BorrowingService:
         try:
             request = BookRequest(
                 id = None,
-                user_id= user.id,
+                user_id= user.uid,
                 book_id=request_dto.book_id,
                 copy_code = "",
                 wait_time = request_dto.interest_window,
@@ -24,7 +24,6 @@ class BorrowingService:
                 updated_at = datetime.now()
             )
             await self.orchestrator.submit_loan_request(
-                book_id = request_dto.book_id,
                 user = user,
                 req = request
             )

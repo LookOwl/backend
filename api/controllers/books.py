@@ -68,8 +68,8 @@ async def borrowBook(loanDto : LoanDto, user : User = Depends(user_auth_guard), 
             "result" : "ok"
         }
     
-    except:
+    except Exception as e:
         raise HTTPException(
             status_code=403,
-            detail="Book cannot be borrowed"
+            detail=f"Book cannot be borrowed: {e}"
         )

@@ -28,14 +28,14 @@ class BorrowingOrchestrator:
             raise ForbiddenOperationException("El tiempo de préstamo solicitado no es válido")
         async with self._uow as uow:
             n_requests_in_queue = await uow.solicitud_libro_repo.list(user_id=user.uid,limit=3, status=EstadoSolicitud.PENDIENTE) 
-            if(n_requests_in_queue >= 3 ):
+            if(len(n_requests_in_queue) >= 3 ):
                 raise ForbiddenOperationException("Usuario tiene 3 o más solicitudes en cola")
         
         
         # Verificar si la ventana privilegiada está llena
         #Necesitamos bloquear el acceso a tales índices en redis
         async with self._lock_manager.acquire(str(req.book_id)) as lock:
-            available_slots = self._redis_controller.get_available_slots(req.book_id)
+            available_slots = await self._redis_controller.get_available_slots(req.book_id)
             if(available_slots <= 0):
                 #Si la cola está llena, avisar al usuario que está llena la cola
                 #TODO( Añadir un pedido "fastasma" con un corto TTL que permita al usuario adquirir el espacio)
@@ -43,7 +43,7 @@ class BorrowingOrchestrator:
             else:
                 async with self._uow as uow:
                     uow.solicitud_libro_repo.create(req)
-                    self._redis_controller.dec_available_slots(req.book_id)
+                    await self._redis_controller.dec_available_slots(req.book_id)
     
     async def cancel_request_in_queue(self, req_id : int ):
         async with self._uow as uow:
@@ -54,7 +54,7 @@ class BorrowingOrchestrator:
             #Si existe, entonces procedamos a borrarlo: Bloqueemos el índice de redis
             async with self._lock_manager.acquire(str(request.book_id)):
                 uow.solicitud_libro_repo.cancel(str(request.book_id))
-                self._redis_controller.inc_available_slots(str(request.book_id))
+                await self._redis_controller.inc_available_slots(str(request.book_id))
     
     async def cancel_request_notified(self, req_id : int ):
         async with self._uow as uow:
@@ -68,13 +68,13 @@ class BorrowingOrchestrator:
             async with self._lock_manager.acquire(str(request.book_id)):
                 uow.solicitud_libro_repo.cancel(str(request.book_id))
                 #Al cancelar una solicitud notificada, el libro que se le asignó vuelve a estar disponible, así que incrementamos el total de copias disponibles en redis
-                self._redis_controller.inc_total_copies(str(request.book_id))
-                self._redis_controller.inc_available_slots(str(request.book_id))
+                await self._redis_controller.inc_total_copies(str(request.book_id))
+                await self._redis_controller.inc_available_slots(str(request.book_id))
 
     async def get_priviledged_queue(self, book_id : int):
         async with self._uow as uow:
             async with self._lock_manager.acquire(str(book_id)):
-                total_copies = self._redis_controller.get_total_copies(str(book_id))
+                total_copies = await self._redis_controller.get_total_copies(str(book_id))
                 requests = await uow.solicitud_libro_repo.list(
                     book_id=book_id,
                     status=EstadoSolicitud.PENDIENTE, 
@@ -144,8 +144,8 @@ class BorrowingOrchestrator:
                 uow.loan_repo.close(loan_id,datetime.now())
                 uow.book_copy_repo.mark_available(loan.copy_code)
                 #Al terminar un préstamo, el libro vuelve a estar disponible, así que incrementamos el total de copias disponibles en redis
-                self._redis_controller.inc_total_copies(copy.libro_id)
-                self._redis_controller.inc_available_slots(copy.libro_id)
+                await self._redis_controller.inc_total_copies(copy.libro_id)
+                await self._redis_controller.inc_available_slots(copy.libro_id)
                 
 
 class NullObjectException(Exception) : pass
