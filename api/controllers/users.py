@@ -37,6 +37,6 @@ async def register(registerDto : RegisterUserDto, authService : AuthService = De
     except UnknownException as e:
         raise HTTPException(
             status_code=500,
-            detail="No se pudo crear el usuario. Intente de nuevo más tarde."
+            detail="No se pudo crear el usuario. Error: {}".format(str(e))
         )
     
