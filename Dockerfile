@@ -2,10 +2,9 @@
 # Capa para construccion
 FROM python:3.13-slim AS builder
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+RUN pip install --no-cache-dir uv
 
 ENV UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
     UV_PYTHON_DOWNLOADS=never
 
 WORKDIR /app

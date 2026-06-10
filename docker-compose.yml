@@ -18,6 +18,7 @@ services:
       start_period: 10s
 
   migrate:
+    image: backendlookowl:latest
     build: .
     command: alembic upgrade head
     env_file: .env.docker
@@ -27,7 +28,7 @@ services:
     restart: on-failure
 
   app:
-    build: .
+    image: backendlookowl:latest
     ports:
       - "8000:8000"
     env_file: .env.docker
@@ -54,7 +55,7 @@ services:
         condition: service_healthy
 
   cache:
-    image : redis    
+    image: redis
     ports:
       - "6379:6379"
     healthcheck:
