@@ -175,13 +175,13 @@ def test_register_user_endpoint(client):
             "contact_number": "300123456",
             "email": "register@test.com",
             "password": "TestPassword123!",
-            "role": "lector",
+            "role": "LECTOR",
         },
     )
 
     assert response.status_code == 200
     body = response.json()
-    assert body == {"user_id": 1, "role": "lector"}
+    assert body == {"user_id": 1, "role": "LECTOR"}
 
 
 def test_login_user_endpoint_returns_token(client):
@@ -192,13 +192,13 @@ def test_login_user_endpoint_returns_token(client):
             "contact_number": "300123456",
             "email": "login@test.com",
             "password": "SecurePass123!",
-            "role": "lector",
+            "role": "LECTOR",
         },
     )
 
     response = client.post(
         "/api/users/login",
-        json={"email": "login@test.com", "password": "SecurePass123!", "role": "lector"},
+        json={"email": "login@test.com", "password": "SecurePass123!", "role": "LECTOR"},
     )
 
     assert response.status_code == 200
@@ -211,7 +211,7 @@ def test_login_user_endpoint_returns_token(client):
 def test_login_user_endpoint_rejects_invalid_credentials(client):
     response = client.post(
         "/api/users/login",
-        json={"email": "missing@test.com", "password": "WrongPass123!", "role": "lector"},
+        json={"email": "missing@test.com", "password": "WrongPass123!", "role": "LECTOR"},
     )
 
     assert response.status_code == 401
