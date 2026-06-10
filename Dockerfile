@@ -24,6 +24,9 @@ FROM python:3.13-slim
 RUN groupadd -r app && useradd -r -d /app -g app app
 
 COPY --from=builder --chown=app:app /app /app
+COPY --chown=app:app entrypoint.sh /app/entrypoint.sh
+
+RUN chmod +x /app/entrypoint.sh
 
 ENV PATH="/app/.venv/bin:$PATH"
 
