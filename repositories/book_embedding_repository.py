@@ -6,10 +6,11 @@ from infrastructure.database.models.libro_embedding import LibroEmbedding
 from infrastructure.database.models.libro import Libro
 from domain.book import Book
 from datetime import date
+from infrastructure.config.config import settings
 import asyncio
 
 MODEL_NAME = "AventIQ-AI/all-MiniLM-L6-v2-book-recommendation-system"
-_model = SentenceTransformer(MODEL_NAME)
+_model = SentenceTransformer(MODEL_NAME, token=settings.HUGGINGFACE_KEY)
 
 
 class BookEmbeddingRepository:
