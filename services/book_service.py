@@ -50,7 +50,7 @@ class BookService:
             id=0,
             title=book.title,
             isbn=book.isbn,
-            description=book.isbn,
+            description=book.description,
             editorial=book.editorial,
             publication_date=book.publication_date,
             cover_url=book.cover_url.encoded_string(),
