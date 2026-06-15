@@ -18,19 +18,22 @@ class LoginUser:
         self.user_repo = user_repo
         self.hasher = hasher
         self.token_handler = token_handler
-        pass
+        
 
-    def execute(
+    async def execute(
             self,
             email : str,
             password : str
         ) -> Token:
         #Find credentials associated with that email
-        credentials : UserCredentials = self.user_repo.find_user_credential(email)
-        if(credentials is None) : raise Exception   #TODO(Declare domains errors)
+        credentials : UserCredentials | None = await self.user_repo.find_user_credential(email)
+        if(credentials is None) : raise Exception("No credentials found")   #TODO(Declare domains errors)
         #If password does not match the hashed one
         if(not self.hasher.verify_password(credentials.stored_password,password)):
-            raise Exception # Temporal
+            raise Exception("Invalid password") # Temporal
         #If so, find the user
-        user : User = self.user_repo.get_by_email(credentials.email)
+        user : User | None = await self.user_repo.get_by_email(credentials.email)
+        if(not user):
+            raise Exception("No user found")
+
         return self.token_handler.generate_token(user_id = user.id, user_role = user.role)

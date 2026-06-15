@@ -15,7 +15,7 @@ class RegisterUser:
         self.user_repo = user_repo
         self.hasher = password_hasher
 
-    def execute(
+    async def execute(
         self,
         full_name: str,
         contact_number: str,
@@ -23,7 +23,7 @@ class RegisterUser:
         password: str
     ) -> None:
         
-        return self.user_repo.save_user(User(
+        return await self.user_repo.save_user(User(
             id = UserId(-1),
             full_name=full_name,
             contact_number=contact_number,

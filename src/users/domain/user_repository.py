@@ -1,31 +1,30 @@
 from abc import ABC, abstractmethod
-from typing import Coroutine 
 from users.domain.user import User
 from users.domain.user_id import UserId
 from users.domain.user_credential import UserCredentials
 
-class UserRepository:
+class UserRepository(ABC):
     
     @abstractmethod
-    async def get_by_id(id : UserId) -> User | None:
+    async def get_by_id(self,id : UserId) -> User | None:
         pass
 
     @abstractmethod
-    async def get_by_email( email : str )-> User | None:
+    async def get_by_email(self, email : str )-> User | None:
         pass
     
     @abstractmethod
-    async def find_user_credential( email : str ) -> UserCredentials | None:
+    async def find_user_credential(self, email : str ) -> UserCredentials | None:
         pass
 
     @abstractmethod
-    async def save_user( new_user : User) -> None:
+    async def save_user( self, new_user : User) -> None:
         pass
 
     @abstractmethod
-    async def delete_user( id : UserId ) -> None:
+    async def delete_user( self, id : UserId ) -> None:
         pass
 
     @abstractmethod
-    async def update_user( user : User ) -> None:
+    async def update_user( self, user : User ) -> None:
         pass
