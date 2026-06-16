@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from redis.asyncio import Redis
 from contextlib import asynccontextmanager
-from infrastructure.database.connection import engine
-from infrastructure.redis.redis_seed import seed
-from infrastructure.config.config import settings
-from api.controllers.books import router as r1
-from api.controllers.users import router as r2
+from old.infrastructure.database.connection import engine
+from old.infrastructure.redis.redis_seed import seed
+from old.infrastructure.config.config import settings
+from old.api.controllers.books import router as r1
+from old.api.controllers.users import router as r2
 
 @asynccontextmanager
 async def lifespan(app : FastAPI):

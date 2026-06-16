@@ -1,0 +1,34 @@
+from __future__ import annotations
+from old.infrastructure.database.base import BaseModel
+from old.domain.enums.roles_usuario import RolUsuario
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from old.infrastructure.database.models.prestamo import Prestamo
+    from old.infrastructure.database.models.solicitud_libro import SolicitudLibro
+
+class Usuario(BaseModel):
+
+    """
+        Modelo ORM para representar un usuario.
+
+        Atributos:
+            - nombre: Nombre del usuario.
+            - email: Correo electrónico del usuario.
+            - numero_contacto: Número telefónico de contacto para el usuario.
+            - rol: Tipo de cargo asignado a cada usuario (bibliotecario o lector)
+            - password_hashed: Hash guardado de la contraseña
+    """
+
+    __tablename__ = "usuarios"
+
+    nombre: Mapped[str] = mapped_column(String(255))
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    numero_contacto: Mapped[str] = mapped_column(String(9))
+    rol: Mapped[RolUsuario] = mapped_column(default=RolUsuario.LECTOR)
+    hash_contrasena: Mapped[str] = mapped_column(String(255))
+
+    prestamos: Mapped[list[Prestamo]] = relationship(back_populates="usuario",lazy='selectin')
+    solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="usuario",lazy='selectin')

@@ -1,0 +1,140 @@
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from old.infrastructure.database.models.autor import Autor
+from old.infrastructure.database.models.genero import Genero
+from old.infrastructure.database.models.libro import Libro
+from old.domain.book import Book
+from datetime import date
+from typing import Optional
+
+
+class BookRepository:
+
+    def __init__(self, db: AsyncSession) -> None:
+        self.db = db
+
+    async def get_books(
+        self,
+        title: Optional[str] = None,
+        author: Optional[str] = None,
+        genre: Optional[str] = None,
+        language: Optional[str] = None,
+        from_date: Optional[date] = None,
+        to_date: Optional[date] = None,
+        limit: int = 20,
+        offset: int = 0
+    ) -> list[Book]:
+        query = select(Libro).options(
+            selectinload(Libro.autores),
+            selectinload(Libro.generos),
+        )
+
+        if title:
+            query = query.where(Libro.titulo.ilike(f"%{title}%"))
+
+        if language:
+            query = query.where(Libro.lenguaje == language)
+
+        if author:
+            query = query.join(Libro.autores).where(
+                Autor.nombre.ilike(f"%{author}%")
+            )
+
+        if genre:
+            query = query.join(Libro.generos).where(
+                Genero.nombre.ilike(f"%{genre}%")
+            )
+
+        if from_date:
+            query = query.where(from_date <= Libro.fecha_publicacion)
+
+        if to_date:
+            query = query.where(Libro.fecha_publicacion <= to_date)
+
+        query = query.distinct().order_by(Libro.id).offset(offset).limit(limit)
+        result = await self.db.execute(query)
+        libros = list(result.scalars().all())
+        return [self._to_domain(libro) for libro in libros]
+
+    async def save_book(self, book: Book) -> Book:
+        self._validate_book(book)
+        # Resolve or create Autor/Genero objects while session is open
+        resolved_autores = await self._resolve_autores(book.author)
+        resolved_generos = await self._resolve_generos(book.category)
+
+        libro = Libro(
+            titulo=book.title,
+            isbn=book.isbn,
+            descripcion=book.description,
+            editorial=book.editorial,
+            fecha_publicacion=book.publication_date,
+            url_portada=book.cover_url,
+            lenguaje=book.language,
+            num_paginas=book.page_count,
+            autores=resolved_autores,
+            generos=resolved_generos,
+        )
+
+        self.db.add(libro)
+        await self.db.flush()
+        await self.db.refresh(libro)
+
+        return self._to_domain(libro)
+
+    def _validate_book(self, book: Book) -> None:
+        if not book.title or len(book.title) > 255:
+            raise ValueError("El titulo del libro no es valido")
+        if book.isbn and len(book.isbn) > 13:
+            raise ValueError("El ISBN del libro no es valido")
+        if book.editorial and len(book.editorial) > 100:
+            raise ValueError("La editorial del libro no es valida")
+        if book.cover_url and len(book.cover_url) > 500:
+            raise ValueError("La URL de portada no es valida")
+        if book.language and len(book.language) != 2:
+            raise ValueError("El lenguaje del libro no es valido")
+
+    async def _resolve_autores(self, nombres: list[str]) -> list[Autor]:
+        autores = []
+        for nombre in nombres:
+            result = await self.db.execute(
+                select(Autor).where(Autor.nombre == nombre)
+            )
+            autor = result.scalar_one_or_none()
+            if not autor:
+                autor = Autor(nombre=nombre)
+                self.db.add(autor)
+                await self.db.flush()
+            await self.db.refresh(autor)
+            autores.append(autor)
+        return autores
+
+    async def _resolve_generos(self, nombres: list[str]) -> list[Genero]:
+        generos = []
+        for nombre in nombres:
+            result = await self.db.execute(
+                select(Genero).where(Genero.nombre == nombre)
+            )
+            genero = result.scalar_one_or_none()
+            if not genero:
+                genero = Genero(nombre=nombre)
+                self.db.add(genero)
+            await self.db.flush()
+            await self.db.refresh(genero)
+            generos.append(genero)
+        return generos
+
+    def _to_domain(self, libro: Libro) -> Book:
+        return Book(
+            id=libro.id,
+            title=libro.titulo,
+            isbn=libro.isbn if libro.isbn else "",
+            description=libro.descripcion if libro.descripcion else "",
+            editorial=libro.editorial if libro.editorial else "",
+            publication_date=libro.fecha_publicacion if libro.fecha_publicacion else date.min,
+            cover_url=libro.url_portada if libro.url_portada else "",
+            language=libro.lenguaje,
+            author=[autor.nombre for autor in libro.autores],
+            category=[genero.nombre for genero in libro.generos],
+            page_count=libro.num_paginas if libro.num_paginas else -1,
+        )
