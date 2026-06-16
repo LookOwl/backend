@@ -6,7 +6,9 @@ from books.domain.book_copy import BookCopyId
 from books.domain.book_copy_repository import BookCopyRepository
 from books.domain.book_copy import BookCopy
 from books.domain.book_repository import BookRepository
+from loans.application.loan_request_dispatcher import LoanRequestEventDispatcher
 from loans.domain.loan_request import LoanRequest, LoanRequestId
+from loans.domain.loan_request_event import LoanRequestCopyAssigned
 from loans.domain.loan_request_repo import LoanRequestRepository
 from shared.application.unit_of_work import UnitOfWork
 
@@ -17,20 +19,23 @@ class AssignBookCopyToLoanRequest:
     book_availability_store : BookAvailabilityStore
     book_repo : BookRepository
     loan_request_repo : LoanRequestRepository
-
+    loan_request_dispatcher : LoanRequestEventDispatcher
     def __init__(
             self,
             uow : UnitOfWork,
             book_availability_store : BookAvailabilityStore,
             book_copy_repository : BookCopyRepository,
             book_repository : BookRepository,
-            loan_request_repository : LoanRequestRepository
+            loan_request_repository : LoanRequestRepository,
+            loan_request_dispatcher : LoanRequestEventDispatcher
         ) -> None:
         self.uow = uow
         self.book_availability_store = book_availability_store
         self.book_copy_repo = book_copy_repository
         self.book_repo = book_repository
         self.loan_request_repo = loan_request_repository
+        self.loan_request_dispatcher = loan_request_dispatcher
+
 
     async def execute(self, book_copy : str, book_id : int, request_id : int):
         async with self.uow:
@@ -44,4 +49,9 @@ class AssignBookCopyToLoanRequest:
             request.assign_book(copy.copy_id)
             #If so, then update the status of the loan, the status of the copy, and apply a hard lock
             await self.book_copy_repo.update_book_copy(copy)
-            
+        #Book updated. Notify listeners
+        await self.loan_request_dispatcher.notify(LoanRequestCopyAssigned(
+            loan=request,
+            book_copy=copy
+        ))
+        return

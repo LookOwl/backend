@@ -1,9 +1,8 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import  datetime, timedelta
 
 from books.domain.book import BookId
 from books.domain.book_copy import BookCopyId
-from loans.domain.loan_request_event import LoanRequestEvent, LoanRequestEventType
 from users.domain.user_id import UserId
 from loans.domain.loan_request_status import LoanRequestStatus
 
@@ -28,8 +27,6 @@ class LoanRequestTimeRequested:
 @dataclass
 class LoanRequest:
 
-    events : list[LoanRequestEvent] = field(init=False, default=[])
-
     loan_id : LoanRequestId
     user_id: UserId
     book_id: BookId
@@ -42,13 +39,9 @@ class LoanRequest:
 
     def expire(self):
         if(datetime.now() - self.created_at >= self.wait_time.to_timedelta()):
-            self.events.append(
-                LoanRequestEvent(
-                    self.loan_id,
-                    LoanRequestEventType.EXPIRED
-                    )
-                )
             self.status = LoanRequestStatus.CANCELADA
+        else:
+            raise Exception("Not possible to expire")
 
     def assign_book(self, copy_id : BookCopyId):
         self.book_copy_code = copy_id

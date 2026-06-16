@@ -1,35 +1,59 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from enum import Enum
-from loans.domain.loan_request import LoanRequestId
+from books.domain.book_copy import BookCopy
+from shared.domain.event_type import EventType
+from loans.domain.loan_request import LoanRequest
+from users.domain.user import User
 
-class LoanRequestEventType(Enum):
-    """A new request arrived to the queue"""
-    CREATED = "CREATED"
-    """Means the request expired due to its wait time"""
-    EXPIRED = "EXPIRED"
-    """Means the max time for pickup was due"""
-    PICKUP_EXPIRED = "PICKUP_EXPIRED"
-    """A book copy was assigned to the loan request"""
-    ASSIGNED = "ASSIGNED"
-
-@dataclass
-class LoanRequestEvent:
-    loan_id : LoanRequestId
-    event_type : LoanRequestEventType
+"""Base class for all loan request events"""
+class LoanRequestEvent(EventType):
+    pass
 
 
-class LoanRequestEventHandler(ABC):    
-    @abstractmethod
-    async def handle(self,event:LoanRequestEvent)-> None:
-        pass
+# 4 casos
+class LoanRequestCreated(LoanRequestEvent):
+    loan : LoanRequest
+    user : User
 
-class LoanRequestBus(ABC):
+    def __init__(self, id : LoanRequest, user : User) -> None:
+        super().__init__()
+        self.id = id
+        self.user = user
 
-    @abstractmethod
-    async def suscribe(self, suscriber: LoanRequestEventHandler):
-        pass
+    def get_type(self):
+        return LoanRequestCreated
 
-    @abstractmethod
-    async def publish(self, event: LoanRequestEventType) -> None:
-        pass
+
+class LoanRequestInterestTimeExpired(LoanRequestEvent):
+    loan : LoanRequest
+
+    def __init__(self,loan : LoanRequest) -> None:
+        super().__init__()
+        self.loan = loan
+
+    def get_type(self):
+        return LoanRequestInterestTimeExpired
+
+
+class LoanRequestCopyAssigned(LoanRequestEvent):
+    loan : LoanRequest
+    book_copy : BookCopy
+
+    def __init__(self,loan : LoanRequest, book_copy : BookCopy) -> None:
+        super().__init__()
+        self.loan = loan
+        self.book_copy = book_copy
+    
+    def get_type(self):
+        return LoanRequestCopyAssigned
+
+
+class LoanRequestPickupTimeExpired(LoanRequestEvent):
+    loan : LoanRequest
+
+    def __init__(self,loan : LoanRequest) -> None:
+        super().__init__()
+        self.loan = loan
+    
+    def get_type(self):
+        return LoanRequestPickupTimeExpired
+
+

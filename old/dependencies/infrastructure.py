@@ -1,7 +1,7 @@
 from fastapi import Request, Depends
 from old.infrastructure.database.connection import async_session_factory
 from redis.asyncio import Redis
-from old.infrastructure.redis.lock import RedisLockManager, RedisLock
+from old.infrastructure.redis.lock import RedisLockManager
 from old.infrastructure.redis.redis_controller import RedisController
 
 async def async_get_db_session():

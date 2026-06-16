@@ -13,8 +13,8 @@ class UnitOfWork(ABC):
         if exc_type:
             try:
                 await self.rollback()
-            except Exception:
-                raise Exception("Cannot rollback")
+            except Exception as e3:
+                raise Exception("Cannot rollback") from e3
         else:
             try:
                 await self.commit()

@@ -10,7 +10,9 @@ class LoanRequestRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_by_book_id(self, id: BookId) -> list[LoanRequest]:
+    async def get_n_first_pending_by_book_id(self, id: BookId, limit : int) -> list[LoanRequest]:
+        """Method that returns `limit` number of LoanRequests which MUST BE IN ORDER OF CREATION
+        AND ALL OF THEM IN LoanRequestStatus::PENDIENTE STATUS"""
         pass
 
     @abstractmethod
