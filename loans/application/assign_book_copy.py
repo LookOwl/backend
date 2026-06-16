@@ -2,7 +2,7 @@
 
 from books.domain.book import Book, BookId
 from books.domain.book_availability_store import BookAvailabilityStore
-from books.domain.book_copy import BookCopyId, BookCopyStatus
+from books.domain.book_copy import BookCopyId
 from books.domain.book_copy_repository import BookCopyRepository
 from books.domain.book_copy import BookCopy
 from books.domain.book_repository import BookRepository
@@ -41,7 +41,7 @@ class AssignBookCopyToLoanRequest:
             if(not copy or not book or not request): raise Exception("Book, book_copy or request does not exist")
             
             copy.reserve()
-            request.assign
+            request.assign_book(copy.copy_id)
             #If so, then update the status of the loan, the status of the copy, and apply a hard lock
             await self.book_copy_repo.update_book_copy(copy)
             
