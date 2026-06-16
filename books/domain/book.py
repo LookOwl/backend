@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+import datetime
 
 from users.domain.user import User, UserRole
 
@@ -21,7 +22,7 @@ class BookDescription:
 
 @dataclass
 class BookEditorial:
-    description : str
+    editorial : str
 
 @dataclass
 class BookPublicationDate:
@@ -78,7 +79,17 @@ class BookBuilder:
     page_count : BookPageCount
 
     def __init__(self) -> None:
-        self.book = Book()
+        self.book_id = BookId(0)
+        self.title = BookTitle("")
+        self.isbn = BookISBN("")
+        self.description = BookDescription("")
+        self.editorial = BookEditorial("")
+        self.publication_date = BookPublicationDate(datetime.datetime.now())
+        self.cover_url = BookCover("")
+        self.language = BookLanguage("")
+        self.author = BookAuthor([])
+        self.category = BookCategory([])
+        self.page_count = BookPageCount(0)
 
     def with_id ( self, book_id : BookId ):
         self.book_id = book_id

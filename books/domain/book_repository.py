@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from books.domain.book import Book, BookId
 from books.domain.book_search_criteria import BookSearchCriteria
+from books.domain.result_page import ResultPage
 
 class BookRepository(ABC):
     
@@ -9,7 +10,7 @@ class BookRepository(ABC):
         pass
     
     @abstractmethod
-    async def find_similar_books(self, book : BookSearchCriteria) -> list[Book]:
+    async def find_by_criteria(self, book : BookSearchCriteria, page_limits : ResultPage) -> list[Book]:
         pass
 
     @abstractmethod
@@ -24,6 +25,4 @@ class BookRepository(ABC):
     async def delete_book(self, book_id : BookId) -> None:
         pass
     
-    #TODO(Añadir dos metodos mas)
-    #def get_similar(self, book : Book ) -> 
 

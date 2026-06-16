@@ -1,8 +1,8 @@
 from datetime import date
-from books.domain.book import BookAuthor, BookBuilder, BookCategory, BookCover, BookDescription, BookEditorial, BookISBN, BookId, BookLanguage, BookPageCount, BookPublicationDate, BookTitle
+from books.domain.book import BookAuthor, BookBuilder, BookCategory, BookCover, BookDescription, BookEditorial, BookISBN, BookLanguage, BookPageCount, BookPublicationDate, BookTitle
 from books.domain.book_repository import BookRepository
-from old.domain.book import Book
-from old.domain.user import User
+from books.domain.book import Book
+from users.domain.user import User
 from users.domain.user_id import UserId
 from users.domain.user_repository import UserRepository
 
@@ -34,7 +34,7 @@ class RegisterBook:
             page_count : int,
             user_id : int
         ):
-            user : User = await self.user_repo.get_by_id(UserId(uid = user_id))
+            user : User | None = await self.user_repo.get_by_id(UserId(uid = user_id))
             if( not user ):
                  raise Exception("User not found")
             
