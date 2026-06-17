@@ -27,7 +27,7 @@ class LoanRequestTimeRequested:
 @dataclass
 class LoanRequest:
 
-    loan_id : LoanRequestId
+    loan_req_id : LoanRequestId
     user_id: UserId
     book_id: BookId
     book_copy_code : BookCopyId | None

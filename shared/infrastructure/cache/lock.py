@@ -13,13 +13,13 @@ class RedisLock:
     end
     """
 
-    _lock_id : int
-    _lock_key : int
+    _lock_id : str
+    _lock_key : str
 
     def __init__(
             self,
             redis: Redis,
-            key: str,
+            key: str,   #BookId
             ttl: int,
             wait: bool = False,
             retry_delay: float = 0.1,
@@ -43,11 +43,11 @@ class RedisLock:
         return self
         
 
-    async def __aexit__(self, exc_type, exc, tb):
+    async def __aexit__(self, exc_type, exc, tb): #type: ignore
         await self._redis.eval(
             self.RELEASE_SCRIPT,1,self._lock_key, self._lock_id
         )
-        return False
+        return False #Propagate errors
 
     async def _acquire_with_retry(self):
         elapsed = 0.0

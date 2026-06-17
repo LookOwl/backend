@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
+from books.infrastructure.http.http_controller import jwt_auth_guard
 from loans.application.use_cases.get_priviledged_requests import GetPriviledgedRequests
 from loans.application.use_cases.request_loan import RequestLoan
 from loans.infrastructure.http.dtos.request_loan_dto import RequestLoanDto
@@ -34,7 +35,7 @@ async def getLoans(
 @router.post("/request")
 async def requestLoan(
     loan_dto : RequestLoanDto, 
-    user : User = Depends(),    #TODO(Add the guard here) 
+    user : User = Depends(jwt_auth_guard),
     request_loan_uc : RequestLoan = Depends()
 ):
     try:

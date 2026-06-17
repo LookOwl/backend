@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from users.application.use_cases.register_user import RegisterUser
-from users.domain.token import Token
+from users.domain.token import EncryptedToken
 
 from users.application.use_cases.login_user import LoginUser
 from users.infrastructure.di import get_login_user_uc, get_register_user_uc
@@ -16,12 +16,12 @@ async def login(
     login_use_case : LoginUser = Depends(get_login_user_uc),
 ):
     try:
-        token : Token = await login_use_case.execute(
+        token : EncryptedToken = await login_use_case.execute(
             loginDto.email
             ,loginDto.password
         )
-        res : dict[str,Token | str] =  {
-            "access_token" : token,
+        res : dict[str, str] =  {
+            "access_token" : token.raw_value,
             "token_type" : "bearer"
         }
         return res

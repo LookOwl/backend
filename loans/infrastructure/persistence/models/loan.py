@@ -30,12 +30,10 @@ class Prestamo(BaseModel):
 
     codigo_ejemplar: Mapped[str] = mapped_column(ForeignKey("ejemplares.codigo"))
     id_usuario_asociado: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
-    fecha_aprobacion: Mapped[Optional[date]]
-    fecha_vencimiento: Mapped[Optional[date]]
+    fecha_aprobacion: Mapped[date]
+    fecha_vencimiento: Mapped[date]
     fecha_regreso: Mapped[Optional[date]]
     estado: Mapped[LoanStatus] = mapped_column(default=LoanStatus.ACTIVO)
-
-    solicitud_id: Mapped[int] = mapped_column(ForeignKey("solicitudes_libro.id"), unique=True)
 
     usuario: Mapped[Usuario] = relationship(back_populates="prestamos", lazy='joined')
     ejemplar: Mapped[Ejemplar] = relationship(back_populates="prestamos", lazy='joined')

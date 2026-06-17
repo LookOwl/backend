@@ -17,6 +17,6 @@ class Loan:
     book_id : BookId
     approval_date : date
     due_date : date
-    return_date : date
+    return_date : date | None
     status : LoanStatus
     
