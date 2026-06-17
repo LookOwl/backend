@@ -12,7 +12,7 @@ from books.infrastructure.adapters.redis_book_availability_reader import RedisBo
 from books.infrastructure.adapters.sql_book_repository import SQLBookRepository
 from loans.domain.loan_request_repo import LoanRequestRepository
 from loans.infrastructure.di import get_sql_loan_req_repo
-from old.dependencies.repositories import get_book_copy_repository
+from books.infrastructure.di import get_sql_book_repository
 from shared.application.unit_of_work import UnitOfWork
 from shared.infrastructure.cache.lock import RedisLockManager
 from shared.infrastructure.cache.redis_controller import RedisController
@@ -31,7 +31,7 @@ def get_redis_book_availability_reader(
 
 def get_redis_book_availability_builder(
     loan_req_repository: LoanRequestRepository = Depends(get_sql_loan_req_repo), 
-    book_copy_repository: BookCopyRepository = Depends(get_book_copy_repository), 
+    book_copy_repository: BookCopyRepository = Depends(get_sql_book_repository), 
     uow: UnitOfWork = Depends(get_sql_unit_of_work), 
     redis_controller: RedisController = Depends(get_redis_controller), 
     redis_lock_manager: RedisLockManager = Depends(get_redis_lock_manager) 

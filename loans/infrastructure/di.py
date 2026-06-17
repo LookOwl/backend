@@ -44,7 +44,7 @@ def get_priviledged_requests_uc(
 def get_loan_request_dispatcher(
     request : Request
 ):
-    assert isinstance(request.app.loan_request_dispatcher, LoanRequestEventDispatcher)
+    assert isinstance(request.app.state.loan_request_dispatcher, LoanRequestEventDispatcher)
     return request.app.loan_request_dispatcher
 
 def get_request_loan_uc(
