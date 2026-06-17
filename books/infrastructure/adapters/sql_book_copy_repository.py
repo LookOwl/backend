@@ -1,4 +1,4 @@
-from sqlalchemy import delete, update, select
+from sqlalchemy import delete, func, update, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from books.domain.book import BookId
 from books.domain.book_copy import BookCopy, BookCopyId
@@ -27,7 +27,14 @@ class SQLBookCopyRepository(BookCopyRepository):
         if result is None : return None
         return self._to_domain(result)
 
-    
+    async def count_available_copies_per_book(self, book_id : BookId) -> int:
+        return (
+            await self.async_session.execute(
+                select(func.count())
+                .select_from(Ejemplar).where(Ejemplar.libro_id == book_id.id)
+            )
+        ).scalar_one()
+
     async def find_by_book(self, id : BookId) -> list[BookCopy]:
         results = (
             await self

@@ -14,7 +14,11 @@ class LoanRequestRepository(ABC):
         """Method that returns `limit` number of LoanRequests which MUST BE IN ORDER OF CREATION
         AND ALL OF THEM IN LoanRequestStatus::PENDIENTE STATUS"""
         pass
-
+    
+    @abstractmethod
+    async def count_pending_by_book_id(self, id: BookId) -> int:
+        pass
+    
     @abstractmethod
     async def save_request(self, request: LoanRequest) -> None:
         pass

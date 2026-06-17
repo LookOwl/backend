@@ -1,7 +1,7 @@
 from datetime import datetime
 
+from books.application.book_availability_facade import BookAvailabilityFacade
 from books.domain.book import Book, BookId
-from books.domain.book_availability_store import BookAvailabilityStore
 from books.domain.book_repository import BookRepository
 from loans.application.loan_request_dispatcher import LoanRequestEventDispatcher
 from loans.domain.loan import UserId
@@ -15,7 +15,7 @@ from users.domain.user_repository import UserRepository
 
 class RequestLoan:
 
-    book_availability_store : BookAvailabilityStore
+    book_availability_facade : BookAvailabilityFacade
     loan_request_repository : LoanRequestRepository
     book_repository : BookRepository
     user_repository : UserRepository
@@ -28,10 +28,10 @@ class RequestLoan:
             loan_req_repository: LoanRequestRepository,
             book_repository : BookRepository,
             user_repository : UserRepository,
-            book_availability_store : BookAvailabilityStore,
+            book_availability_facade : BookAvailabilityFacade,
             loan_event_dispatcher :LoanRequestEventDispatcher
         ) -> None:
-        self.book_availability_store = book_availability_store
+        self.book_availability_facade = book_availability_facade
         self.loan_request_repository = loan_req_repository
         self.book_repository = book_repository
         self.user_repository = user_repository
@@ -47,11 +47,11 @@ class RequestLoan:
             if( not user or not book ): raise Exception("User or Book does not exist")
 
             #Now, check the availability
-            queue_length : int = (await self.book_availability_store.get_availability(book.book_id)).available_books
+            queue_length : int = (await self.book_availability_facade.read_availability(book.book_id)).no_soft_locked_copies
 
             #No matter what, request is created and put in queue. 
             request : LoanRequest = LoanRequest(
-                loan_id= LoanRequestId(id=0),
+                loan_req_id= LoanRequestId(id=0),
                 user_id=user.id,
                 book_id=book.book_id,
                 book_copy_code=None,

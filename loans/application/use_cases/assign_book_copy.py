@@ -1,7 +1,4 @@
-
-
 from books.domain.book import Book, BookId
-from books.domain.book_availability_store import BookAvailabilityStore
 from books.domain.book_copy import BookCopyId
 from books.domain.book_copy_repository import BookCopyRepository
 from books.domain.book_copy import BookCopy
@@ -16,21 +13,18 @@ from shared.application.unit_of_work import UnitOfWork
 class AssignBookCopyToLoanRequest:
 
     uow : UnitOfWork
-    book_availability_store : BookAvailabilityStore
     book_repo : BookRepository
     loan_request_repo : LoanRequestRepository
     loan_request_dispatcher : LoanRequestEventDispatcher
     def __init__(
             self,
             uow : UnitOfWork,
-            book_availability_store : BookAvailabilityStore,
             book_copy_repository : BookCopyRepository,
             book_repository : BookRepository,
             loan_request_repository : LoanRequestRepository,
             loan_request_dispatcher : LoanRequestEventDispatcher
         ) -> None:
         self.uow = uow
-        self.book_availability_store = book_availability_store
         self.book_copy_repo = book_copy_repository
         self.book_repo = book_repository
         self.loan_request_repo = loan_request_repository

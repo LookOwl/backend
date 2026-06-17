@@ -1,4 +1,4 @@
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from books.domain.book import BookId
 from books.domain.book_copy import BookCopyId
@@ -44,7 +44,19 @@ class SQLLoanRequestRepository(LoanRequestRepository):
             self._to_domain(result) for result in results
         ]
 
-    
+    async def count_pending_by_book_id(self, id: BookId) -> int:
+        results = (
+            await self.async_session.execute(
+                select(func.count())
+                .select_from(SolicitudLibro)
+                .where(SolicitudLibro.id_libro == id.id)
+                .where(SolicitudLibro.estado == LoanRequestStatus.PENDIENTE)
+                .order_by(SolicitudLibro.created_at)
+            )
+        ).scalar_one()
+        
+        return results
+
     async def save_request(self, request: LoanRequest) -> None:
         self.async_session.add(
             SolicitudLibro(

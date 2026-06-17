@@ -1,5 +1,5 @@
+from books.application.book_availability_facade import BookAvailabilityFacade
 from books.domain.book import Book, BookId
-from books.domain.book_availability_store import BookAvailabilityStore
 from books.domain.book_repository import BookRepository
 from loans.domain.loan_request import LoanRequest
 from loans.domain.loan_request_repo import LoanRequestRepository
@@ -10,7 +10,7 @@ class GetPriviledgedRequests:
 
     loan_request_repo : LoanRequestRepository
     book_repository : BookRepository
-    book_availability_service : BookAvailabilityStore
+    book_availability_facade : BookAvailabilityFacade
     uow : UnitOfWork
 
     def __init__(
@@ -18,11 +18,11 @@ class GetPriviledgedRequests:
             uow : UnitOfWork,
             book_repo : BookRepository,
             loan_request_repo : LoanRequestRepository,
-            book_availability_service : BookAvailabilityStore
+            book_availability_facade : BookAvailabilityFacade
         ) -> None:
         self.loan_request_repo = loan_request_repo
         self.book_repository = book_repo
-        self.book_availability_service = book_availability_service
+        self.book_availability_facade = book_availability_facade
         self.uow = uow
 
     async def execute(self, book_id : int):
@@ -30,7 +30,7 @@ class GetPriviledgedRequests:
             book : Book | None = await self.book_repository.get_by_id(BookId(id=book_id))
             if not book: raise Exception("No book found")
             
-            n_priviledged_requests : int = (await self.book_availability_service.get_availability(book.book_id)).total_books
+            n_priviledged_requests : int = (await self.book_availability_facade.read_availability(book.book_id)).no_hard_locked_copies
             
             requests : list[LoanRequest] = await self.loan_request_repo.get_n_first_pending_by_book_id(
                 book.book_id,
