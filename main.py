@@ -9,7 +9,7 @@ from old.api.controllers.users import router as r2
 
 @asynccontextmanager
 async def lifespan(app : FastAPI):
-    app.state.redis =  Redis.from_url(
+    app.state.redis : Redis =  Redis.from_url(  #type: ignore
         url=settings.REDIS_URL,
         encoding="utf-8",
         decode_responses=True

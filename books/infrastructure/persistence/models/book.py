@@ -43,7 +43,7 @@ class Libro(BaseModel):
 
     titulo: Mapped[str] = mapped_column(String(255))
     isbn: Mapped[Optional[str]] = mapped_column(String(13), unique=True)
-    descripcion: Mapped[Optional[str]] = mapped_column(Text)
+    descripcion: Mapped[str] = mapped_column(Text, default="")
     editorial: Mapped[Optional[str]] = mapped_column(String(100))
     fecha_publicacion: Mapped[Optional[date]]
     url_portada: Mapped[Optional[str]] = mapped_column(String(500))

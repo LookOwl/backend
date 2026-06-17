@@ -1,6 +1,8 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from old.dependencies.uow import get_unit_of_work
+from shared.application.unit_of_work import UnitOfWork
 from shared.infrastructure.persistence.di import get_async_sql_session
 from users.application.ports import PasswordHasher, TokenHandler
 from users.application.use_cases.login_user import LoginUser
@@ -27,16 +29,19 @@ def get_register_user_uc(
 ):
     return RegisterUser(
         user_repo=user_repo,
-        password_hasher=password_hasher
+        password_hasher=password_hasher,
+        uow=Depends(get_unit_of_work)
     )
 
 def get_login_user_uc(
     user_repo: UserRepository = Depends(get_sql_user_repo),
     hasher: PasswordHasher = Depends(get_bcrypt_password_hasher),
-    token_handler: TokenHandler = Depends(get_jwt_token_handler)
+    token_handler: TokenHandler = Depends(get_jwt_token_handler),
+    uow: UnitOfWork = Depends(get_unit_of_work)
 ):
     return LoginUser(
         user_repo,
         hasher,
-        token_handler
+        token_handler,
+        uow
     )

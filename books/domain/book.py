@@ -52,15 +52,15 @@ class BookPageCount:
 class Book:
     book_id : BookId
     title : BookTitle
-    isbn : BookISBN
+    isbn : BookISBN | None
     description : BookDescription
-    editorial : BookEditorial
-    publication_date : BookPublicationDate
-    cover_url : BookCover
+    editorial : BookEditorial | None
+    publication_date : BookPublicationDate | None
+    cover_url : BookCover | None
     language : BookLanguage
     author : BookAuthor
     category : BookCategory
-    page_count : BookPageCount
+    page_count : BookPageCount | None
 
 
 
@@ -68,28 +68,28 @@ class BookBuilder:
     
     book_id : BookId
     title : BookTitle
-    isbn : BookISBN
+    isbn : BookISBN | None
     description : BookDescription
-    editorial : BookEditorial
-    publication_date : BookPublicationDate
-    cover_url : BookCover
+    editorial : BookEditorial | None
+    publication_date : BookPublicationDate | None
+    cover_url : BookCover | None
     language : BookLanguage
     author : BookAuthor
     category : BookCategory
-    page_count : BookPageCount
+    page_count : BookPageCount | None
 
     def __init__(self) -> None:
         self.book_id = BookId(0)
         self.title = BookTitle("")
-        self.isbn = BookISBN("")
+        self.isbn = None
         self.description = BookDescription("")
-        self.editorial = BookEditorial("")
+        self.editorial = None
         self.publication_date = BookPublicationDate(datetime.datetime.now())
-        self.cover_url = BookCover("")
+        self.cover_url = None
         self.language = BookLanguage("")
         self.author = BookAuthor([])
         self.category = BookCategory([])
-        self.page_count = BookPageCount(0)
+        self.page_count = None
 
     def with_id ( self, book_id : BookId ):
         self.book_id = book_id

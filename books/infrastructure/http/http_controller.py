@@ -3,7 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from books.application.use_cases.register_book import RegisterBook
 from books.application.use_cases.search_books import SearchBook
 from books.domain.book import Book
+from books.infrastructure.di import get_register_book_uc, get_search_book_uc
 from books.infrastructure.http.dtos.register_book_dto import RegisterBookDto
+from shared.infrastructure.di import jwt_auth_guard
 from users.domain.user import User
 from users.domain.user_role import UserRole
 
@@ -15,7 +17,7 @@ async def getBooks(
     author:str | None= None,
     limit:int=20,
     offset:int = 0, 
-    search_book : SearchBook = Depends()
+    search_book : SearchBook = Depends(get_search_book_uc)
 ):
     result : list[Book] = await search_book.execute(
         title=title,
@@ -42,8 +44,8 @@ async def getBooks(
 @router.post("/register")
 async def registerBook(
     info : RegisterBookDto,
-    user : User = Depends(), 
-    register_book : RegisterBook = Depends()
+    user : User = Depends(jwt_auth_guard),
+    register_book : RegisterBook = Depends(get_register_book_uc)
 ):
     if user.role != UserRole.BIBLIOTECARIO:
         raise HTTPException(

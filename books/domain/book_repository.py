@@ -6,11 +6,11 @@ from books.domain.result_page import ResultPage
 class BookRepository(ABC):
     
     @abstractmethod
-    async def get_by_id(self, book_id : BookId) -> Book:
+    async def get_by_id(self, book_id : BookId) -> Book | None:
         pass
     
     @abstractmethod
-    async def find_by_criteria(self, book : BookSearchCriteria, page_limits : ResultPage) -> list[Book]:
+    async def find_by_criteria(self, book_criteria : BookSearchCriteria, page_limits : ResultPage) -> list[Book]:
         pass
 
     @abstractmethod
