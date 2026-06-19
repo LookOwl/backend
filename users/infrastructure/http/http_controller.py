@@ -26,7 +26,7 @@ async def login(
         }
         return res
     except Exception:
-        return HTTPException(
+        raise HTTPException(
             status_code=401,
             detail="Invalid credentials"
         )
@@ -44,8 +44,9 @@ async def register(
             registerDto.email,
             registerDto.password
         )
-    except Exception:
-        return HTTPException(
+    except Exception as e:
+        print(e.__str__())
+        raise HTTPException(
             422,
             detail="unsuccessful register"
         )

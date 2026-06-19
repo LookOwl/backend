@@ -13,13 +13,13 @@ from users.domain.user_role import UserRole
 
 router = APIRouter(prefix="/loans",tags=["loans"])
 
-@router.get("/{loan_id}")
+@router.get("/{book_id}")
 async def getLoans(
-    loan_id : int,
+    book_id : int,
     limit:int = 20,
     offset:int = 0,
     get_requests_uc : GetPriviledgedRequests = Depends(get_priviledged_requests_uc), 
-    user : User = Depends()
+    user : User = Depends(jwt_auth_guard)
 ):
     if user.role != UserRole.BIBLIOTECARIO:
         raise HTTPException(
@@ -27,7 +27,7 @@ async def getLoans(
             detail=f"Rol no autorizado: {user.role}"
         )
     try:
-        results : list[LoanRequest] = await get_requests_uc.execute(loan_id)
+        results : list[LoanRequest] = await get_requests_uc.execute(book_id)
         return [ 
             LoanRequestDto.to_dto(result) for result in results 
         ]

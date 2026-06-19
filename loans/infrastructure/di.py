@@ -32,7 +32,7 @@ def get_loan_request_dispatcher(
     request : Request
 ):
     assert isinstance(request.app.state.loan_request_dispatcher, LoanRequestEventDispatcher)
-    return request.app.loan_request_dispatcher
+    return request.app.state.loan_request_dispatcher
 
 def get_request_loan_uc(
     uow: UnitOfWork = Depends(get_sql_unit_of_work),
