@@ -41,4 +41,8 @@ class SolicitudLibro(BaseModel):
     usuario: Mapped[Usuario] = relationship(back_populates="solicitudes")
     libro: Mapped[Libro] = relationship(back_populates="solicitudes")
     ejemplar: Mapped[Ejemplar] = relationship(back_populates="solicitudes")
-    prestamo: Mapped[Optional[Prestamo]] = relationship(back_populates="solicitud", uselist=False, lazy='joined')
+    prestamo: Mapped[Optional[Prestamo]] = relationship("Prestamo", back_populates="solicitud", uselist=False, lazy='joined')
+
+
+# Late import to satisfy SQLAlchemy mapper resolution
+from infrastructure.database.models.prestamo import Prestamo  # noqa: E402

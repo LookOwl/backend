@@ -7,11 +7,11 @@ from typing import Optional, TYPE_CHECKING
 from infrastructure.database.base import Base, BaseModel
 from infrastructure.database.models.autor import Autor
 from infrastructure.database.models.genero import Genero
-from infrastructure.database.models.solicitud_libro import SolicitudLibro
-from infrastructure.database.models.libro_embedding import LibroEmbedding
 
 if TYPE_CHECKING:
     from infrastructure.database.models.ejemplar import Ejemplar
+    from infrastructure.database.models.solicitud_libro import SolicitudLibro
+    from infrastructure.database.models.libro_embedding import LibroEmbedding
 
 
 
@@ -55,5 +55,10 @@ class Libro(BaseModel):
     autores: Mapped[list[Autor]] = relationship(secondary=libro_autores, lazy="selectin")
     generos: Mapped[list[Genero]] = relationship(secondary=libro_generos, lazy="selectin")
     ejemplares: Mapped[list[Ejemplar]] = relationship(back_populates="libro")
-    solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="libro")
-    embedding: Mapped[LibroEmbedding] = relationship(back_populates="libro")
+    solicitudes: Mapped[list[SolicitudLibro]] = relationship("SolicitudLibro", back_populates="libro")
+    embedding: Mapped[LibroEmbedding] = relationship("LibroEmbedding", back_populates="libro")
+
+
+# Late imports to satisfy SQLAlchemy mapper resolution
+from infrastructure.database.models.solicitud_libro import SolicitudLibro  # noqa: E402
+from infrastructure.database.models.libro_embedding import LibroEmbedding  # noqa: E402
