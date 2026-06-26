@@ -4,9 +4,11 @@ from sqlalchemy import ForeignKey, String
 from shared.infrastructure.persistence.models.base import BaseModel
 from books.domain.book_copy import BookCopyStatus
 
-from books.infrastructure.persistence.models.book import Libro
-from loans.infrastructure.persistence.models.loan import Prestamo
-from loans.infrastructure.persistence.models.loan_request import SolicitudLibro
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from books.infrastructure.persistence.models.book import Libro
+    from loans.infrastructure.persistence.models.loan import Prestamo
+    from loans.infrastructure.persistence.models.loan_request import SolicitudLibro
 
 class Ejemplar(BaseModel):
 

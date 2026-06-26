@@ -4,11 +4,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
 from shared.infrastructure.persistence.models.base import BaseModel
 from loans.domain.loan_status import LoanStatus
-from users.infrastructure.persistence.models.user import Usuario
-from books.infrastructure.persistence.models.book_copy import Ejemplar
-from loans.infrastructure.persistence.models.loan_request import SolicitudLibro
+from typing import Optional, TYPE_CHECKING
 
-from typing import Optional
+if TYPE_CHECKING:
+    from users.infrastructure.persistence.models.user import Usuario
+    from books.infrastructure.persistence.models.book_copy import Ejemplar
+    from loans.infrastructure.persistence.models.loan_request import SolicitudLibro
 
 
 class Prestamo(BaseModel):

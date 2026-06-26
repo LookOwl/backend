@@ -2,7 +2,7 @@ from __future__ import annotations
 from datetime import date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Table, Text, Column, ForeignKey
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from shared.infrastructure.persistence.models.base import Base, BaseModel
 from books.infrastructure.persistence.models.author import Autor
@@ -10,7 +10,8 @@ from books.infrastructure.persistence.models.genero import Genero
 from loans.infrastructure.persistence.models.loan_request import SolicitudLibro
 from books.infrastructure.persistence.models.book_embedding import LibroEmbedding
 
-from books.infrastructure.persistence.models.book_copy import Ejemplar
+if TYPE_CHECKING:
+    from books.infrastructure.persistence.models.book_copy import Ejemplar
 
 
 libro_autores = Table("libro_autores", Base.metadata,

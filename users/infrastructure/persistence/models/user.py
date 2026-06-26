@@ -5,10 +5,9 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 
-#TODO()
 if TYPE_CHECKING:
-    from old.infrastructure.database.models.prestamo import Prestamo
-    from old.infrastructure.database.models.solicitud_libro import SolicitudLibro
+    from loans.infrastructure.persistence.models.loan import Prestamo
+    from loans.infrastructure.persistence.models.loan_request import SolicitudLibro
 
 class Usuario(BaseModel):
 
