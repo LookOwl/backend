@@ -1,7 +1,7 @@
 from books.domain.book import BookId
 from books.domain.book_availability import BookAvailability
 from books.domain.book_availability_builder import BookAvailabilityBuilder
-from loans.infrastructure.di import BookAvailabilityReader
+from books.domain.book_availability_reader import BookAvailabilityReader
 
 
 class BookAvailabilityFacade:
