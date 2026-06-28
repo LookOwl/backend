@@ -1,5 +1,6 @@
 from __future__ import annotations
 from sqlalchemy import ForeignKey, Index, String
+from torch import TYPE_CHECKING
 from shared.infrastructure.persistence.models.base import BaseModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import VECTOR  #type: ignore (pgvector does not come with .pyi files)
@@ -7,7 +8,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from books.infrastructure.persistence.models.book import Libro
-
 
 
 class LibroEmbedding(BaseModel):

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from old.core.validators import PositiveInt
+from shared.infrastructure.http.validators import PositiveInt
 
 class RequestLoanDto(BaseModel):
     book_id : int

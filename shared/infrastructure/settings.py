@@ -4,9 +4,7 @@ from dotenv import load_dotenv
 import os
 import urllib.parse as urlparse
 
-load_dotenv(
-    dotenv_path="../../.env"
-)
+load_dotenv()
 
 class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv(key="DATABASE_URL", default="")
@@ -36,3 +34,5 @@ class Settings(BaseSettings):
         return v
 
 settings = Settings()
+
+print(settings)

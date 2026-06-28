@@ -1,6 +1,6 @@
 from books.domain.book import BookId
 from books.domain.book_availability_builder import BookAvailabilityBuilder
-from books.infrastructure.di import UnitOfWork
+from shared.application.unit_of_work import UnitOfWork
 from loans.domain.loan_request_repo import LoanRequestRepository
 from books.domain.book_copy_repository import BookCopyRepository
 from shared.infrastructure.cache.lock import RedisLockManager

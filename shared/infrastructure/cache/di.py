@@ -1,0 +1,30 @@
+
+
+from fastapi import Depends, Request
+from redis.asyncio import Redis
+
+from shared.infrastructure.cache.lock import RedisLockManager
+from shared.infrastructure.cache.redis_controller import RedisController
+
+
+async def get_redis_session(
+    request : Request =  Depends(Request)
+):
+    assert isinstance(request.state.redis, Redis)
+    return request.state.redis
+
+
+async def get_redis_controller(
+    redis : Redis = Depends(get_redis_session)       
+):
+    return RedisController(
+        redis
+    )
+
+async def get_redis_lock_manager(
+    redis : Redis = Depends(get_redis_session)
+):
+    return RedisLockManager(
+        redis
+    )
+

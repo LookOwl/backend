@@ -4,6 +4,7 @@ from books.application.use_cases.register_book import RegisterBook
 from books.application.use_cases.search_books import SearchBook
 from books.domain.book import Book
 from books.infrastructure.di import get_register_book_uc, get_search_book_uc
+from books.infrastructure.http.dtos.book_dto import BookDto
 from books.infrastructure.http.dtos.register_book_dto import RegisterBookDto
 from shared.infrastructure.di import jwt_auth_guard
 from users.domain.user import User
@@ -19,7 +20,7 @@ async def getBooks(
     offset:int = 0, 
     search_book : SearchBook = Depends(get_search_book_uc)
 ):
-    result : list[Book] = await search_book.execute(
+    results : list[Book] = await search_book.execute(
         title=title,
         authors= [] if not author else [author]  ,
         limit=limit+1,
@@ -28,10 +29,10 @@ async def getBooks(
 
     has_next : bool= False
 
-    if(len(result) > limit): has_next = True
+    if(len(results) > limit): has_next = True
     
-    res : dict[str,list[Book]|dict[str,int|bool] ] = {
-        "result" : result,
+    res : dict[str,list[BookDto]|dict[str,int|bool] ] = {
+        "result" : [ BookDto.to_dto(result) for result in results ],
         "page" : {
             "offset" : offset,
             "limit" : limit,

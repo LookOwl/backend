@@ -1,32 +1,19 @@
 from fastapi import Depends, Request
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from books.application.book_availability_facade import BookAvailabilityFacade
 from books.domain.book_repository import BookRepository
 from loans.domain.loan_request_repo import LoanRequestRepository
-from loans.infrastructure.adapters.sql_loan_req_repository import SQLLoanRequestRepository
-from loans.infrastructure.http.http_controller import GetPriviledgedRequests, RequestLoan
+
+from loans.application.use_cases.get_priviledged_requests import GetPriviledgedRequests
+from loans.application.use_cases.request_loan import RequestLoan
+from loans.infrastructure.adapters.di import get_sql_loan_req_repo
 from shared.application.unit_of_work import UnitOfWork
-from shared.infrastructure.di import get_sql_unit_of_work
-from books.infrastructure.di import get_redis_book_availability_facade, get_sql_book_repository
+from shared.infrastructure.persistence.di import get_sql_unit_of_work
+from books.infrastructure.adapters.cache.di import get_redis_book_availability_facade
+from books.infrastructure.adapters.persistence.di import get_sql_book_repository
 from users.domain.user_repository import UserRepository
 from loans.application.loan_request_dispatcher import LoanRequestEventDispatcher
 from users.infrastructure.di import get_sql_user_repo
-from loans.infrastructure.adapters.sql_loan_repository import SQLLoanRepository
-from shared.infrastructure.di import get_async_sql_session
-
-def get_sql_loan_repo(
-    async_session : AsyncSession = Depends(get_async_sql_session)
-):
-    return SQLLoanRepository(
-        async_session
-    )
-
-def get_sql_loan_req_repo(
-        async_session : AsyncSession = Depends(get_async_sql_session)
-):
-    return SQLLoanRequestRepository(
-        async_session
-    )
 
 def get_priviledged_requests_uc(
         uow: UnitOfWork = Depends(get_sql_unit_of_work), 

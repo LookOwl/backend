@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from redis.asyncio import Redis
 from contextlib import asynccontextmanager
-from books.infrastructure.di import RedisController, RedisLockManager
+from shared.infrastructure.cache.lock import RedisLockManager
+from shared.infrastructure.cache.redis_controller import RedisController
 from loans.application.loan_request_dispatcher import LoanRequestEventDispatcher
 from loans.infrastructure.adapters.redis_loan_req_event_handler import RedisLoanRequestEventHandler
 from shared.application.event_dispatcher_factory import EventDispatcherFactory

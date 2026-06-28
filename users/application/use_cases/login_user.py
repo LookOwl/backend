@@ -3,7 +3,7 @@ from users.domain.user_repository import User
 from users.domain.user_credential import UserCredentials
 from users.domain.user_repository import UserRepository
 from users.domain.token import EncryptedToken
-from application.ports import PasswordHasher, TokenHandler
+from users.application.ports import PasswordHasher, TokenHandler
 class LoginUser:
 
     user_repo : UserRepository

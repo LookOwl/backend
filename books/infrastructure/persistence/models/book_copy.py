@@ -1,6 +1,7 @@
 from __future__ import annotations
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, String
+from torch import TYPE_CHECKING
 from shared.infrastructure.persistence.models.base import BaseModel
 from books.domain.book_copy import BookCopyStatus
 
@@ -9,6 +10,9 @@ if TYPE_CHECKING:
     from books.infrastructure.persistence.models.book import Libro
     from loans.infrastructure.persistence.models.loan import Prestamo
     from loans.infrastructure.persistence.models.loan_request import SolicitudLibro
+
+if TYPE_CHECKING:
+    from books.infrastructure.persistence.models.book import Libro
 
 class Ejemplar(BaseModel):
 

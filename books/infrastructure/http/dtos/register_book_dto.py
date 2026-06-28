@@ -2,7 +2,7 @@ from datetime import date
 
 from pydantic import AnyUrl, BaseModel
 
-from old.core.validators import IsbnString
+from shared.infrastructure.http.validators import IsbnString
 from shared.infrastructure.http.validators import LanguageString, NonEmptyString, NonEmptyStringList, PositiveInt
 
 class RegisterBookDto(BaseModel):

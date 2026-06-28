@@ -7,7 +7,7 @@ from shared.infrastructure.settings import settings
 
 # Establecemos conexión con la base de datos
 engine = create_async_engine(
-    settings.ASYNC_DATABASE_URL,
+    url=settings.ASYNC_DATABASE_URL,
     pool_size=10,
     max_overflow=20,
     pool_pre_ping=True,            
