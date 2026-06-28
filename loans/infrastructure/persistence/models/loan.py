@@ -37,7 +37,6 @@ class Prestamo(BaseModel):
     estado: Mapped[LoanStatus] = mapped_column(default=LoanStatus.ACTIVO)
 
     id_solicitud: Mapped[int] = mapped_column(ForeignKey("solicitudes_libro.id"), unique=True)
-    #solicitud: Mapped[SolicitudLibro] = relationship(back_populates="prestamo")
 
     usuario: Mapped[Usuario] = relationship(back_populates="prestamos", lazy='joined')
     ejemplar: Mapped[Ejemplar] = relationship(back_populates="prestamos", lazy='joined')
