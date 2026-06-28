@@ -27,7 +27,8 @@ async def jwt_auth_guard(
     try:
         user =  await guard.resolve_token(EncryptedToken(credentials.credentials))
         return user
-    except Exception:
+    except Exception as e:
+        print(e.__str__())
         raise HTTPException(
             status_code=401,    #Unauthorized
             detail="Invalid token or user"

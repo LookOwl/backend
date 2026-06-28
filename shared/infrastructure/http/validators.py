@@ -1,5 +1,6 @@
 from typing import Annotated
 from annotated_types import Len, Ge
+from fastapi import HTTPException
 from pydantic import StringConstraints, AfterValidator
 
 NonEmptyString = Annotated[
@@ -90,7 +91,10 @@ def validate_isbn(isbn : str):
             case _ :
                 raise Exception("Only ISBN-10 and ISBN-13 formats are allowed")
     except Exception as e:
-        raise Exception("Error parsing ISBN") from e 
+        raise HTTPException(
+            status_code=422,
+            detail="Error parsing ISBN"
+            ) from e 
     
     return normalized
 

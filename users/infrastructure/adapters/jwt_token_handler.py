@@ -14,11 +14,11 @@ class JWTTokenHandler(TokenHandler):
             minutes=settings.JWT_EXPIRE_TIME_IN_MINUTES
         )
         payload : dict[str,str | datetime | UserRole]  = {
-            "sub" : str(user_id),
+            "sub" : str(user_id.uid),
             "exp" : expire,
             "iat" : now,
             "iss" : "LookOwl-Server" ,
-            "role" : user_role
+            "role" : user_role.value
         }
 
         return EncryptedToken(jwt.encode( #type: ignore
@@ -36,6 +36,8 @@ class JWTTokenHandler(TokenHandler):
             algorithms=[settings.JWT_ALGORITHM]
         )
         uid = decoded["sub"]
+        print(decoded["sub"])
+        print(type(decoded["sub"]))
         if(not isinstance(uid,str)): raise ValueError("Impossible to parse ID")
         return Token(
             user_id=UserId(uid=int(uid)),
