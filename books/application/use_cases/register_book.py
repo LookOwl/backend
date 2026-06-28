@@ -1,5 +1,6 @@
 from datetime import date
 from books.domain.book import BookAuthor, BookBuilder, BookCategory, BookCover, BookDescription, BookEditorial, BookISBN, BookLanguage, BookPageCount, BookPublicationDate, BookTitle
+from books.domain.book_embedding_repository import BookEmbeddingRepository
 from books.domain.book_repository import BookRepository
 from books.domain.book import Book
 from shared.application.unit_of_work import UnitOfWork
@@ -18,10 +19,12 @@ class RegisterBook:
             self,
             book_repository : BookRepository,
             user_repository : UserRepository,
+            book_embedding_repository: BookEmbeddingRepository,
             uow : UnitOfWork
         ) -> None:
         self.book_repo = book_repository
         self.user_repo = user_repository
+        self.book_embedding = book_embedding_repository
         self.uow = uow
 
     async def execute(
@@ -42,7 +45,7 @@ class RegisterBook:
                 user : User | None = await self.user_repo.get_by_id(UserId(uid = user_id))
                 if( not user ):
                     raise Exception("User not found")
-                
+
                 book : Book = (
                     BookBuilder()
                     .with_title(BookTitle(title=title))
@@ -59,5 +62,10 @@ class RegisterBook:
                 )
 
                 await self.book_repo.save_book(book)
+
+                genres = "".join(book.category.categories)
+                prompt = f"{book.title.title} - {book.description.description} - {genres}"
+
+                await self.book_embedding.save(prompt)
 
             return

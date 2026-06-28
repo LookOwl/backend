@@ -7,6 +7,11 @@ class BookEmbeddingRepository(ABC):
     """Port for accessing book embeddings and generating recommendations."""
 
     @abstractmethod
+    async def save(self, prompt: str) -> None:
+        """Saves an embedding created based on a sentence / prompt"""
+        pass
+
+    @abstractmethod
     async def get_recommendations_by_book(
         self, book_id: BookId, num_recommendations: int = 15
     ) -> list[Book]:
