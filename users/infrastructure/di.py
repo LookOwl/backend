@@ -24,12 +24,13 @@ def get_jwt_token_handler():
 
 def get_register_user_uc(
         user_repo : UserRepository = Depends(get_sql_user_repo),
-        password_hasher : PasswordHasher = Depends(get_bcrypt_password_hasher)
+        password_hasher : PasswordHasher = Depends(get_bcrypt_password_hasher),
+        uow : UnitOfWork =Depends(get_sql_unit_of_work)
 ):
     return RegisterUser(
         user_repo=user_repo,
         password_hasher=password_hasher,
-        uow=Depends(get_sql_unit_of_work)
+        uow = uow
     )
 
 def get_login_user_uc(

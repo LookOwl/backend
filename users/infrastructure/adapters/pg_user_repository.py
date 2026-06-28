@@ -74,7 +74,7 @@ class SQLUserRepository(UserRepository):
                 nombre = new_user.full_name,
                 email = new_user.credentials.email,
                 numero_contacto = new_user.contact_number,
-                hash_contrasena = new_user.credentials.stored_password,
+                hash_contrasena = new_user.credentials.stored_password.hashed,
                 rol = new_user.role
             )
         )
