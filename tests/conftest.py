@@ -6,6 +6,7 @@ from books.domain.book_copy_repository import BookCopyRepository
 from books.domain.book_repository import BookRepository
 from loans.application.loan_request_dispatcher import LoanRequestEventDispatcher
 from loans.domain.loan_request_repo import LoanRequestRepository
+from users.application.ports import PasswordHasher, TokenHandler
 from users.domain.user_repository import UserRepository
 from shared.application.unit_of_work import UnitOfWork
 
@@ -67,3 +68,15 @@ def mock_loan_event_dispatcher() -> AsyncMock:
 def mock_book_copy_repo() -> AsyncMock:
     """Returns an AsyncMock spec'd to BookCopyRepository."""
     return AsyncMock(spec=BookCopyRepository)
+
+
+@pytest.fixture
+def mock_password_hasher() -> MagicMock:
+    """Returns a MagicMock spec'd to PasswordHasher (sync methods)."""
+    return MagicMock(spec=PasswordHasher)
+
+
+@pytest.fixture
+def mock_token_handler() -> MagicMock:
+    """Returns a MagicMock spec'd to TokenHandler (sync methods)."""
+    return MagicMock(spec=TokenHandler)
