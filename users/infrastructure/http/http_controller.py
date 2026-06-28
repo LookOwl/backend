@@ -25,7 +25,8 @@ async def login(
             "token_type" : "bearer"
         }
         return res
-    except Exception:
+    except Exception as e:
+        print(e.__str__())
         raise HTTPException(
             status_code=401,
             detail="Invalid credentials"
