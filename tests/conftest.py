@@ -3,6 +3,7 @@ import pytest
 
 from books.application.book_availability_facade import BookAvailabilityFacade
 from books.domain.book_copy_repository import BookCopyRepository
+from books.domain.book_embedding_repository import BookEmbeddingRepository
 from books.domain.book_repository import BookRepository
 from loans.application.loan_request_dispatcher import LoanRequestEventDispatcher
 from loans.domain.loan_request_repo import LoanRequestRepository
@@ -45,6 +46,10 @@ def mock_user_repo() -> AsyncMock:
     """Returns an AsyncMock spec'd to UserRepository."""
     return AsyncMock(spec=UserRepository)
 
+@pytest.fixture
+def mock_book_embedding_repo() -> AsyncMock:
+    """Returns an AsyncMock spec'd to BookEmbeddingRepository"""
+    return AsyncMock(spec=BookEmbeddingRepository)
 
 @pytest.fixture
 def mock_loan_req_repo() -> AsyncMock:

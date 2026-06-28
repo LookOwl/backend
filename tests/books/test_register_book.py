@@ -41,12 +41,12 @@ class TestRegisterBook:
 
     @pytest.mark.asyncio
     async def test_register_book_successfully_as_librarian(
-        self, mock_book_repo: AsyncMock, mock_user_repo: AsyncMock, fake_uow
+        self, mock_book_repo: AsyncMock, mock_user_repo: AsyncMock, mock_book_embedding_repo, fake_uow
     ) -> None:
         # Arrange
         librarian = _make_librarian(1)
         mock_user_repo.get_by_id.return_value = librarian
-        uc = RegisterBook(mock_book_repo, mock_user_repo, fake_uow)
+        uc = RegisterBook(mock_book_repo, mock_user_repo, mock_book_embedding_repo, fake_uow)
 
         # Act
         await uc.execute(
@@ -75,11 +75,11 @@ class TestRegisterBook:
 
     @pytest.mark.asyncio
     async def test_register_book_raises_when_user_not_found(
-        self, mock_book_repo: AsyncMock, mock_user_repo: AsyncMock, fake_uow
+        self, mock_book_repo: AsyncMock, mock_user_repo: AsyncMock, mock_book_embedding_repo, fake_uow
     ) -> None:
         # Arrange
         mock_user_repo.get_by_id.return_value = None
-        uc = RegisterBook(mock_book_repo, mock_user_repo, fake_uow)
+        uc = RegisterBook(mock_book_repo, mock_user_repo, mock_book_embedding_repo, fake_uow)
 
         # Act & Assert
         with pytest.raises(Exception, match="User not found"):
@@ -102,12 +102,12 @@ class TestRegisterBook:
 
     @pytest.mark.asyncio
     async def test_register_book_raises_when_user_is_not_librarian(
-        self, mock_book_repo: AsyncMock, mock_user_repo: AsyncMock, fake_uow
+        self, mock_book_repo: AsyncMock, mock_user_repo: AsyncMock, mock_book_embedding_repo: AsyncMock, fake_uow
     ) -> None:
         # Arrange
         reader = _make_reader(2)
         mock_user_repo.get_by_id.return_value = reader
-        uc = RegisterBook(mock_book_repo, mock_user_repo, fake_uow)
+        uc = RegisterBook(mock_book_repo, mock_user_repo, mock_book_embedding_repo, fake_uow)
 
         # Act & Assert
         with pytest.raises(Exception, match="Only librarians can create books"):
@@ -130,13 +130,13 @@ class TestRegisterBook:
 
     @pytest.mark.asyncio
     async def test_register_book_with_minimal_fields(
-        self, mock_book_repo: AsyncMock, mock_user_repo: AsyncMock, fake_uow
+        self, mock_book_repo: AsyncMock, mock_user_repo: AsyncMock, mock_book_embedding_repo: AsyncMock, fake_uow
     ) -> None:
         """Register a book providing only the required fields."""
         # Arrange
         librarian = _make_librarian(1)
         mock_user_repo.get_by_id.return_value = librarian
-        uc = RegisterBook(mock_book_repo, mock_user_repo, fake_uow)
+        uc = RegisterBook(mock_book_repo, mock_user_repo, mock_book_embedding_repo, fake_uow)
 
         # Act
         await uc.execute(
@@ -159,13 +159,13 @@ class TestRegisterBook:
 
     @pytest.mark.asyncio
     async def test_register_book_rolls_back_on_save_failure(
-        self, mock_book_repo: AsyncMock, mock_user_repo: AsyncMock, fake_uow
+        self, mock_book_repo: AsyncMock, mock_user_repo: AsyncMock, mock_book_embedding_repo: AsyncMock, fake_uow
     ) -> None:
         # Arrange
         librarian = _make_librarian(1)
         mock_user_repo.get_by_id.return_value = librarian
         mock_book_repo.save_book.side_effect = RuntimeError("DB error")
-        uc = RegisterBook(mock_book_repo, mock_user_repo, fake_uow)
+        uc = RegisterBook(mock_book_repo, mock_user_repo, mock_book_embedding_repo, fake_uow)
 
         # Act & Assert
         with pytest.raises(RuntimeError, match="DB error"):
