@@ -1,11 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from books.application.use_cases.register_book import RegisterBook
 from books.application.use_cases.search_books import SearchBook
-from books.domain.book import Book
+from books.domain.book import Book, BookId
 from books.infrastructure.di import get_register_book_uc, get_search_book_uc
 from books.infrastructure.http.dtos.book_dto import BookDto
 from books.infrastructure.http.dtos.register_book_dto import RegisterBookDto
+from books.application.use_cases.get_book_recommendations import GetBookRecommendations
+from books.application.use_cases.get_query_recommendations import GetQueryRecommendations
+from books.infrastructure.di import get_book_recommendations_uc, get_query_recommendations_uc
 from shared.infrastructure.di import jwt_auth_guard
 from users.domain.user import User
 from users.domain.user_role import UserRole
@@ -17,7 +20,7 @@ async def getBooks(
     title:str | None = None,
     author:str | None= None,
     limit:int=20,
-    offset:int = 0, 
+    offset:int = 0,
     search_book : SearchBook = Depends(get_search_book_uc)
 ):
     results : list[Book] = await search_book.execute(
@@ -29,8 +32,9 @@ async def getBooks(
 
     has_next : bool= False
 
-    if(len(results) > limit): has_next = True
-    
+    if len(results) > limit:
+        has_next = True
+
     res : dict[str,list[BookDto]|dict[str,int|bool] ] = {
         "result" : [ BookDto.to_dto(result) for result in results ],
         "page" : {
@@ -53,7 +57,7 @@ async def registerBook(
             status_code=403,     #Forbidden
             detail="Sólo bibliotecarios autorizados"
         )
-    try: 
+    try:
         await register_book.execute(
             info.title,
             info.isbn,
@@ -72,3 +76,42 @@ async def registerBook(
             status_code= 409,
             detail="No se pudo crear el libro"
         )
+
+recommendations_router = APIRouter(prefix="/recommendations", tags=["recommendations"])
+
+@recommendations_router.get("/by-book/{book_id}")
+async def recommend_by_book(
+    book_id: int,
+    limit: int = Query(default=15, ge=1, le=50),
+    get_recommendations: GetBookRecommendations = Depends(
+        get_book_recommendations_uc
+    ),
+):
+    try:
+        books = await get_recommendations.execute(
+            book_id=BookId(book_id),
+            num_recommendations=limit,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return {"recommendations": [BookDto.to_dto(b) for b in books]}
+
+
+@recommendations_router.get("/by-query")
+async def recommend_by_query(
+    q: str = Query(..., min_length=1, description="Search query text"),
+    limit: int = Query(default=15, ge=1, le=50),
+    get_recommendations: GetQueryRecommendations = Depends(
+        get_query_recommendations_uc
+    ),
+):
+    try:
+        books = await get_recommendations.execute(
+            query=q,
+            num_recommendations=limit,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return {"recommendations": [BookDto.to_dto(b) for b in books]}

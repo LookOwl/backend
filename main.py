@@ -11,6 +11,7 @@ from shared.infrastructure.settings import settings
 from books.infrastructure.http.http_controller import router as r1
 from loans.infrastructure.http.http_controller import router as r2
 from users.infrastructure.http.http_controller import router as r3
+from books.infrastructure.http.http_controller import recommendations_router as r4
 
 @asynccontextmanager
 async def lifespan(app : FastAPI):
@@ -37,4 +38,5 @@ async def lifespan(app : FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(prefix= "/api", router= r1 )
 app.include_router(prefix= "/api", router= r2 )
-app.include_router(prefix="/api", router = r3)
+app.include_router(prefix= "/api", router= r3 )
+app.include_router(prefix= "/api", router= r4 )
