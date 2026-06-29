@@ -77,15 +77,15 @@ class SQLBookCopyRepository(BookCopyRepository):
         return
 
 
-    async def delete_book_copy(self, book_copy : BookCopyId) -> None:
-        (
-            await self.async_session.execute(
+    async def delete_book_copy(self, book_copy : BookCopyId) -> int:
+        result = await self.async_session.execute(
                 delete(Ejemplar)
                 .where(Ejemplar.codigo == book_copy.physical_id)
+                .returning(Ejemplar.codigo)
             )
-        )
+
         await self.async_session.flush()
-        return
+        return result.fetchone() is not None
 
     def _to_domain(self, ejemplar: Ejemplar) -> BookCopy:
         return BookCopy(
