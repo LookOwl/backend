@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from books.application.use_cases.delete_book import DeleteBook
 from books.application.use_cases.get_book_copies import GetBookCopies
 from books.application.use_cases.register_book import RegisterBook
 from books.application.use_cases.register_book_copy import RegisterBookCopy
 from books.application.use_cases.search_books import SearchBook
 from books.domain.book import Book, BookId
 from books.domain.book_copy import BookCopy
-from books.infrastructure.di import get_book_copies_uc, get_register_book_copies_uc, get_register_book_uc, get_search_book_uc
+from books.infrastructure.di import get_book_copies_uc, get_deleter_book_uc, get_register_book_copies_uc, get_register_book_uc, get_search_book_uc
 from books.infrastructure.http.dtos.book_copy_dto import BookCopyDto
 from books.infrastructure.http.dtos.book_dto import BookDto
 from books.infrastructure.http.dtos.register_book_copy_dto import RegisterBookCopyDto
@@ -133,3 +134,26 @@ async def recommend_by_book(
         raise HTTPException(status_code=500, detail=str(exc))
 
     return {"recommendations": [BookDto.to_dto(b) for b in books]}
+
+@router.delete("/{book_id}")
+async def delete_book(
+    book_id: int,
+    user: User = Depends(jwt_auth_guard),
+    delete_book: DeleteBook = Depends(get_deleter_book_uc)
+):
+    if user.role != UserRole.BIBLIOTECARIO:
+        raise HTTPException(
+            status_code=403,
+            detail="Solo bibliotecarios autorizados"
+        )
+
+    try:
+        await delete_book.execute(
+            book_id,
+            user.id.uid
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=f"No se pudo eliminar el libro, {exc}"
+        )
