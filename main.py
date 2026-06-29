@@ -8,10 +8,11 @@ from loans.infrastructure.adapters.redis_loan_req_event_handler import RedisLoan
 from shared.application.event_dispatcher_factory import EventDispatcherFactory
 from shared.infrastructure.persistence.sql_drivers import engine
 from shared.infrastructure.settings import settings
-from books.infrastructure.http.http_controller import router as r1
-from loans.infrastructure.http.http_controller import router as r2
-from users.infrastructure.http.http_controller import router as r3
-from books.infrastructure.http.http_controller import recommendations_router as r4
+from books.infrastructure.http.controller.book_controller import router as r1
+from books.infrastructure.http.controller.book_copy_controller import router as r2
+from books.infrastructure.http.controller.recommendation_controller import router as r3
+from loans.infrastructure.http.http_controller import router as r4
+from users.infrastructure.http.http_controller import router as r5
 
 @asynccontextmanager
 async def lifespan(app : FastAPI):
@@ -40,3 +41,4 @@ app.include_router(prefix= "/api", router= r1 )
 app.include_router(prefix= "/api", router= r2 )
 app.include_router(prefix= "/api", router= r3 )
 app.include_router(prefix= "/api", router= r4 )
+app.include_router(prefix= "/api", router= r5 )
