@@ -84,6 +84,7 @@ class SQLBookCopyRepository(BookCopyRepository):
                 .where(Ejemplar.codigo == book_copy.physical_id)
             )
         )
+
         await self.async_session.flush()
         return
 

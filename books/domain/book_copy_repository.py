@@ -8,7 +8,7 @@ class BookCopyRepository(ABC):
     @abstractmethod
     async def get_by_id(self, copy_id : BookCopyId) -> BookCopy | None:
         pass
-    
+
     @abstractmethod
     async def count_available_copies_per_book(self, book_id : BookId) -> int:
         pass

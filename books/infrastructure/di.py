@@ -1,4 +1,5 @@
 from fastapi import Depends
+from books.application.use_cases.delete_book_copy import DeleteBookCopy
 from books.application.use_cases.get_book_copies import GetBookCopies
 from books.application.use_cases.get_book_recommendations import GetBookRecommendations
 from books.application.use_cases.get_query_recommendations import GetQueryRecommendations
@@ -40,7 +41,6 @@ def get_register_book_uc(
 
 def get_book_copies_uc(
     book_repository : BookRepository = Depends(get_sql_book_repository),
-    user_repository : UserRepository = Depends(get_sql_user_repo),
     book_copy_repository : BookCopyRepository = Depends(get_sql_book_copy_repository),
     uow : UnitOfWork = Depends(get_sql_unit_of_work)
 ) -> GetBookCopies:
@@ -69,6 +69,17 @@ def get_updater_book_copies_uc(
     uow : UnitOfWork = Depends(get_sql_unit_of_work)
 ) -> UpdateBookCopy:
     return UpdateBookCopy(
+        user_repository,
+        book_copy_repository,
+        uow
+    )
+
+def get_deleter_book_copy_uc(
+    user_repository : UserRepository = Depends(get_sql_user_repo),
+    book_copy_repository : BookCopyRepository = Depends(get_sql_book_copy_repository),
+    uow : UnitOfWork = Depends(get_sql_unit_of_work)
+) -> DeleteBookCopy:
+    return DeleteBookCopy(
         user_repository,
         book_copy_repository,
         uow
