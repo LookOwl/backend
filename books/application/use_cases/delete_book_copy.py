@@ -1,4 +1,4 @@
-from books.domain.book_copy import BookCopyId
+from books.domain.book_copy import BookCopy, BookCopyId, BookCopyStatus
 from books.domain.book_copy_repository import BookCopyRepository
 from shared.application.unit_of_work import UnitOfWork
 from users.domain.user import User
@@ -27,7 +27,12 @@ class DeleteBookCopy:
             if not user:
                 raise Exception("User not found")
 
-            deleted = await self.book_copy_repository.delete_book_copy(BookCopyId(physical_id=copy_id))
+            book_copy : BookCopy | None = await self.book_copy_repository.get_by_id(BookCopyId(copy_id))
 
-            if not deleted:
-                raise Exception("Element already deleted or never existed")
+            if not book_copy:
+                raise Exception("Ejemplar no existente o ya borrado")
+
+            if book_copy.status == BookCopyStatus.PRESTADO:
+                raise Exception("La copia esta actualmente en préstamo")
+
+            await self.book_copy_repository.delete_book_copy(BookCopyId(physical_id=copy_id))

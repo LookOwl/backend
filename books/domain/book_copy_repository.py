@@ -18,7 +18,7 @@ class BookCopyRepository(ABC):
         pass
 
     @abstractmethod
-    async def save_book_copy(self, book_copy : BookCopy) -> int:
+    async def save_book_copy(self, book_copy : BookCopy) -> None:
         pass
 
     @abstractmethod
