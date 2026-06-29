@@ -1,8 +1,7 @@
-from sqlalchemy import delete, func, update, select, and_
-from books.domain.book_copy import BookCopyStatus
+from sqlalchemy import func, update, select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from books.domain.book import BookId
-from books.domain.book_copy import BookCopy, BookCopyId
+from books.domain.book_copy import BookCopy, BookCopyId, BookCopyStatus
 from books.domain.book_copy_repository import BookCopyRepository
 from books.infrastructure.persistence.models.book_copy import Ejemplar
 
@@ -22,7 +21,10 @@ class SQLBookCopyRepository(BookCopyRepository):
                 .async_session
                 .execute(
                     select(Ejemplar)
-                    .where(Ejemplar.codigo == copy_id.physical_id )
+                    .where(
+                        Ejemplar.codigo == copy_id.physical_id,
+                        Ejemplar.activo
+                    )
                 )
             ).scalar_one_or_none()
         if not result:
@@ -33,7 +35,11 @@ class SQLBookCopyRepository(BookCopyRepository):
         return (
             await self.async_session.execute(
                 select(func.count())
-                .select_from(Ejemplar).where(Ejemplar.libro_id == book_id.id)
+                .select_from(Ejemplar)
+                .where(
+                    Ejemplar.libro_id == book_id.id,
+                    Ejemplar.activo
+                )
             )
         ).scalar_one()
 
@@ -43,7 +49,10 @@ class SQLBookCopyRepository(BookCopyRepository):
                 .async_session
                 .execute(
                     select(Ejemplar)
-                    .where(Ejemplar.libro_id == id.id )
+                    .where(
+                        Ejemplar.libro_id == id.id,
+                        Ejemplar.activo
+                    )
                 )
             ).scalars()
         return [
@@ -86,7 +95,8 @@ class SQLBookCopyRepository(BookCopyRepository):
                 .where(
                     and_(
                         Ejemplar.libro_id == book_id.id,
-                        Ejemplar.estado == BookCopyStatus.PRESTADO
+                        Ejemplar.estado == BookCopyStatus.PRESTADO,
+                        Ejemplar.activo
                     )
                 )
             )
@@ -95,8 +105,9 @@ class SQLBookCopyRepository(BookCopyRepository):
     async def delete_book_copy(self, book_copy : BookCopyId) -> None:
         (
             await self.async_session.execute(
-                delete(Ejemplar)
+                update(Ejemplar)
                 .where(Ejemplar.codigo == book_copy.physical_id)
+                .values(activo=False)
             )
         )
 
