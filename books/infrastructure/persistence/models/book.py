@@ -23,6 +23,7 @@ libro_generos = Table("libro_generos", Base.metadata,
     Column("genero_id", ForeignKey("generos.id"), primary_key=True) #type: ignore
 )
 
+
 class Libro(BaseModel):
 
     """
@@ -49,6 +50,7 @@ class Libro(BaseModel):
     url_portada: Mapped[Optional[str]] = mapped_column(String(500))
     lenguaje: Mapped[str] = mapped_column(String(2), default="es")
     num_paginas: Mapped[Optional[int]]
+    activo: Mapped[bool] = mapped_column(default=True)
 
     autores: Mapped[list[Autor]] = relationship(secondary=libro_autores, lazy="selectin")
     generos: Mapped[list[Genero]] = relationship(secondary=libro_generos, lazy="selectin")

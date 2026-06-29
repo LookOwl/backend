@@ -26,6 +26,7 @@ class Ejemplar(BaseModel):
     libro_id: Mapped[int] = mapped_column(ForeignKey("libros.id"))
     codigo: Mapped[str] = mapped_column(String(50), unique=True)
     estado: Mapped[BookCopyStatus] = mapped_column(default=BookCopyStatus.DISPONIBLE)
+    activo: Mapped[bool] = mapped_column(default=True)
 
     libro: Mapped[Libro] = relationship(back_populates="ejemplares",lazy='joined')
     prestamos: Mapped[list[Prestamo]] = relationship(back_populates="ejemplar",lazy='selectin')
