@@ -1,4 +1,4 @@
-from sqlalchemy import any_, delete, select, update
+from sqlalchemy import any_, select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +11,7 @@ from books.domain.book import Book
 from books.infrastructure.persistence.models.author import Autor
 from books.infrastructure.persistence.models.book import Libro
 from books.infrastructure.persistence.models.genero import Genero
+from books.infrastructure.persistence.models.book_copy import Ejemplar
 
 
 class SQLBookRepository(BookRepository):
@@ -25,7 +26,7 @@ class SQLBookRepository(BookRepository):
     async def get_by_id(self, book_id : BookId) -> Book | None:
         book = (await self.async_session.execute(
             select(Libro)
-            .where(Libro.id == book_id.id)
+            .where(Libro.id == book_id.id, Libro.activo)
             .options(
                 selectinload(Libro.autores),
                 selectinload(Libro.generos)
@@ -40,6 +41,8 @@ class SQLBookRepository(BookRepository):
             selectinload(Libro.autores),
             selectinload(Libro.generos),
         )
+
+        query = query.where(Libro.activo)
 
         if book_criteria.title:
             query = query.where(Libro.titulo.ilike(f"%{book_criteria.title.title}%"))
@@ -125,8 +128,14 @@ class SQLBookRepository(BookRepository):
 
     async def delete_book(self, book_id : BookId) -> None:
         await self.async_session.execute(
-            delete(Libro)
+            update(Ejemplar)
+            .where(Ejemplar.libro_id == book_id.id)
+            .values(activo=False)
+        )
+        await self.async_session.execute(
+            update(Libro)
             .where(Libro.id == book_id.id)
+            .values(activo=False)
         )
         await self.async_session.flush()
 
