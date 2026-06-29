@@ -26,5 +26,9 @@ class BookCopyRepository(ABC):
         pass
 
     @abstractmethod
+    async def count_loaned_copies_per_book(self, book_id: BookId) -> int:
+        pass
+
+    @abstractmethod
     async def delete_book_copy(self, book_copy : BookCopyId) -> None:
         pass
