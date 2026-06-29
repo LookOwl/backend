@@ -1,8 +1,5 @@
-
 from datetime import date
-
 from pydantic import BaseModel
-
 from books.domain.book import Book
 
 

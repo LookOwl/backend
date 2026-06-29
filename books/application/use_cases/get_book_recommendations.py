@@ -6,9 +6,6 @@ from shared.application.unit_of_work import UnitOfWork
 class GetBookRecommendations:
     """Use case: get book recommendations based on a reference book."""
 
-    book_embedding_repo: BookEmbeddingRepository
-    uow: UnitOfWork
-
     def __init__(
         self,
         book_embedding_repository: BookEmbeddingRepository,

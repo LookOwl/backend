@@ -15,41 +15,35 @@ from users.domain.user_repository import UserRepository
 
 class RequestLoan:
 
-    book_availability_facade : BookAvailabilityFacade
-    loan_request_repository : LoanRequestRepository
-    book_repository : BookRepository
-    user_repository : UserRepository
-    uow : UnitOfWork
-    loan_event_dispatcher :LoanRequestEventDispatcher
-
     def __init__(
-            self,
-            uow : UnitOfWork,
-            loan_req_repository: LoanRequestRepository,
-            book_repository : BookRepository,
-            user_repository : UserRepository,
-            book_availability_facade : BookAvailabilityFacade,
-            loan_event_dispatcher :LoanRequestEventDispatcher
-        ) -> None:
+        self,
+        uow : UnitOfWork,
+        loan_req_repository: LoanRequestRepository,
+        book_repository : BookRepository,
+        user_repository : UserRepository,
+        book_availability_facade : BookAvailabilityFacade,
+        loan_event_dispatcher :LoanRequestEventDispatcher
+    ) -> None:
         self.book_availability_facade = book_availability_facade
         self.loan_request_repository = loan_req_repository
         self.book_repository = book_repository
         self.user_repository = user_repository
         self.uow = uow
         self.loan_event_dispatcher = loan_event_dispatcher
-    
+
     async def execute(self, user_id : int, book_id : int,  max_interest_time : int, requested_loan_time : int) -> bool:
         """Exceute the use case. Returns `True` if the request was put on the priviledge queue. `False` if not and is waiting """
-        
+
         async with self.uow:
             user : User | None = await self.user_repository.get_by_id(id=UserId(uid=user_id))
-            book : Book | None = await self.book_repository.get_by_id(book_id=BookId(id=book_id)) 
-            if( not user or not book ): raise Exception("User or Book does not exist")
+            book : Book | None = await self.book_repository.get_by_id(book_id=BookId(id=book_id))
+            if not user or not book:
+                raise Exception("User or Book does not exist")
 
             #Now, check the availability
             queue_length : int = (await self.book_availability_facade.read_availability(book.book_id)).no_soft_locked_copies
 
-            #No matter what, request is created and put in queue. 
+            #No matter what, request is created and put in queue.
             request : LoanRequest = LoanRequest(
                 loan_req_id= LoanRequestId(id=0),
                 user_id=user.id,
@@ -63,7 +57,7 @@ class RequestLoan:
             )
             #save the request
             await self.loan_request_repository.save_request(request)
-        
+
         #End of uow clause. If we reach here, a successfully "commit()" happened
         #Notify listeners that a new request was created
         await self.loan_event_dispatcher.notify(LoanRequestCreated(

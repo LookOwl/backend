@@ -6,10 +6,6 @@ from shared.application.unit_of_work import UnitOfWork
 
 class SearchBook:
 
-    book_repo : BookRepository
-    uow : UnitOfWork
-
-
     def __init__(
             self,
             book_repository : BookRepository,
@@ -17,9 +13,14 @@ class SearchBook:
         ) -> None:
         self.book_repo = book_repository
         self.uow = uow
-        
 
-    async def execute(self, title: str | None, authors : list[str], limit: int, offset: int):
+    async def execute(
+        self,
+        title: str | None,
+        authors : list[str],
+        limit: int,
+        offset: int
+    ):
         async with self.uow :
             result : list[Book] = await self.book_repo.find_by_criteria(
                 BookSearchCriteria(

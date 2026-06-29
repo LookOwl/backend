@@ -1,5 +1,3 @@
-
-
 from sqlalchemy import any_, delete, select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.dialects.postgresql import array
@@ -33,7 +31,8 @@ class SQLBookRepository(BookRepository):
                 selectinload(Libro.generos)
             )
         )).scalar_one_or_none()
-        if not book: return None
+        if not book:
+            return None
         return self._to_domain(book)
 
     async def find_by_criteria(self, book_criteria : BookSearchCriteria, page_limits : ResultPage) -> list[Book]:
@@ -160,7 +159,7 @@ class SQLBookRepository(BookRepository):
             await self.async_session.refresh(genero)
             generos.append(genero)
         return generos
-    
+
     def _to_domain(self, book: Libro) -> Book:
         return Book(
                 BookId(book.id),
