@@ -6,23 +6,18 @@ from shared.domain.event_type import EventType
 
 class LoanRequestEventDispatcher(AppEventDispatcher):
 
-    suscribers : list[LoanRequestEventHandler]
-
     def __init__(self) -> None:
         super().__init__()
-        self.suscribers = []
+        self.suscribers : list[LoanRequestEventHandler] = []
 
     async def notify(self, event : EventType) -> None:
         for suscriber in self.suscribers:
             await suscriber.handle(event)
-        return
 
     async def suscribe(self, suscriber : EventHandler) -> None:
-        if(isinstance(suscriber,LoanRequestEventHandler)):
+        if isinstance(suscriber, LoanRequestEventHandler):
             self.suscribers.append(suscriber)
-        return
 
     async def detach(self, suscriber: EventHandler) -> None:
-        if(isinstance(suscriber,LoanRequestEventHandler)):
+        if isinstance(suscriber, LoanRequestEventHandler):
             self.suscribers.remove(suscriber)
-        return

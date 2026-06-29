@@ -5,16 +5,12 @@ from users.application.ports import PasswordHasher
 
 class RegisterUser:
 
-    user_repo : UserRepository
-    hasher : PasswordHasher
-    uow : UnitOfWork
-
     def __init__(
-            self, 
-            user_repo : UserRepository,
-            password_hasher : PasswordHasher,
-            uow : UnitOfWork
-        ):
+        self,
+        user_repo : UserRepository,
+        password_hasher : PasswordHasher,
+        uow : UnitOfWork
+    ):
         self.user_repo = user_repo
         self.hasher = password_hasher
         self.uow = uow

@@ -12,18 +12,14 @@ from shared.application.unit_of_work import UnitOfWork
 
 class AssignBookCopyToLoanRequest:
 
-    uow : UnitOfWork
-    book_repo : BookRepository
-    loan_request_repo : LoanRequestRepository
-    loan_request_dispatcher : LoanRequestEventDispatcher
     def __init__(
-            self,
-            uow : UnitOfWork,
-            book_copy_repository : BookCopyRepository,
-            book_repository : BookRepository,
-            loan_request_repository : LoanRequestRepository,
-            loan_request_dispatcher : LoanRequestEventDispatcher
-        ) -> None:
+        self,
+        uow : UnitOfWork,
+        book_copy_repository : BookCopyRepository,
+        book_repository : BookRepository,
+        loan_request_repository : LoanRequestRepository,
+        loan_request_dispatcher : LoanRequestEventDispatcher
+    ) -> None:
         self.uow = uow
         self.book_copy_repo = book_copy_repository
         self.book_repo = book_repository
@@ -37,8 +33,9 @@ class AssignBookCopyToLoanRequest:
             copy : BookCopy | None = await self.book_copy_repo.get_by_id(BookCopyId(physical_id=book_copy))
             book : Book | None = await self.book_repo.get_by_id(BookId(id=book_id))
             request : LoanRequest | None = await self.loan_request_repo.get_by_id(id=LoanRequestId(id=request_id))
-            if(not copy or not book or not request): raise Exception("Book, book_copy or request does not exist")
-            
+            if not copy or not book or not request:
+                raise Exception("Book, book_copy or request does not exist")
+
             copy.reserve()
             request.assign_book(copy.copy_id)
             #If so, then update the status of the loan, the status of the copy, and apply a hard lock
@@ -48,4 +45,3 @@ class AssignBookCopyToLoanRequest:
             loan=request,
             book_copy=copy
         ))
-        return

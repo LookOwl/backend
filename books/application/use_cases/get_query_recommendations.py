@@ -4,8 +4,6 @@ from shared.application.unit_of_work import UnitOfWork
 
 
 class GetQueryRecommendations:
-    book_embedding_repo: BookEmbeddingRepository
-    uow: UnitOfWork
 
     def __init__(
         self,
