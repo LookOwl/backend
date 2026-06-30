@@ -1,17 +1,23 @@
-from sqlalchemy import any_, select, update
+from sqlalchemy import any_, asc, desc, or_, select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from books.domain.book import BookAuthor, BookCategory, BookCover, BookDescription, BookEditorial, BookISBN, BookId, BookLanguage, BookPageCount, BookPublicationDate, BookTitle
 from books.domain.book_repository import BookRepository
-from books.domain.book_search_criteria import BookSearchCriteria
+from books.domain.book_search_criteria import AdvancedBookSearchCriteria, BookSearchCriteria, SortBy
 from books.domain.result_page import ResultPage
 from books.domain.book import Book
 from books.infrastructure.persistence.models.author import Autor
 from books.infrastructure.persistence.models.book import Libro
 from books.infrastructure.persistence.models.genero import Genero
 from books.infrastructure.persistence.models.book_copy import Ejemplar
+
+
+_SORT_COLUMN = {
+    SortBy.TITLE: Libro.titulo,
+    SortBy.DATE: Libro.fecha_publicacion,
+    SortBy.ID: Libro.id
+}
 
 
 class SQLBookRepository(BookRepository):
@@ -36,50 +42,128 @@ class SQLBookRepository(BookRepository):
             return None
         return self._to_domain(book)
 
-    async def find_by_criteria(self, book_criteria : BookSearchCriteria, page_limits : ResultPage) -> list[Book]:
-        query = select(Libro).options(
-            selectinload(Libro.autores),
-            selectinload(Libro.generos),
+    async def search_book(
+        self,
+        search_criteria: BookSearchCriteria,
+        page_limits : ResultPage
+    ) -> list[Book]:
+
+        stmt = (
+            select(Libro)
+            .options(
+                selectinload(Libro.autores),
+                selectinload(Libro.generos)
+            )
+            .join(Libro.autores)
+            .join(Libro.generos)
+            .where(Libro.activo)
+            .where(
+                or_(
+                    Libro.titulo.ilike(f"%{search_criteria.query.query}%"),
+                    Libro.editorial.ilike(f"%{search_criteria.query.query}%"),
+                    Libro.isbn.ilike(f"%{search_criteria.query.query}%"),
+                    Autor.nombre.ilike(f"%{search_criteria.query.query}%"),
+                    Genero.nombre.ilike(f"%{search_criteria.query.query}%")
+                )
+            )
         )
 
-        query = query.where(Libro.activo)
+        if search_criteria.from_date:
+            stmt = stmt.where(search_criteria.from_date <= Libro.fecha_publicacion)
 
-        if book_criteria.title:
-            query = query.where(Libro.titulo.ilike(f"%{book_criteria.title.title}%"))
+        if search_criteria.to_date:
+            stmt = stmt.where(Libro.fecha_publicacion <= search_criteria.to_date)
 
-        if book_criteria.language:
-            query = query.where(Libro.lenguaje == book_criteria.language.lang)
+        sort_column = _SORT_COLUMN[search_criteria.sort_by]
+        stmt = stmt.order_by(asc(sort_column) if search_criteria.ascending else desc(sort_column))
+        stmt = (
+            stmt.distinct()
+            .offset(page_limits.starts_at)
+            .limit(page_limits.number_of_results)
+        )
 
-        if len(book_criteria.authors.authors) > 0:
-            query = query.join(Libro.autores).where(
+        books = await self.async_session.execute(stmt)
+        books = books.scalars().all()
+        return [self._to_domain(book) for book in books]
+
+    async def advanced_search_book(
+        self,
+        search_criteria: AdvancedBookSearchCriteria,
+        page_limits: ResultPage
+    ) -> list[Book]:
+
+        stmt = (
+            select(Libro)
+            .options(
+                selectinload(Libro.autores),
+                selectinload(Libro.generos)
+            )
+            .join(Libro.autores)
+            .join(Libro.generos)
+            .where(Libro.activo)
+        )
+
+        if search_criteria.title:
+            stmt = stmt.where(
+                Libro.titulo.ilike(f"%{search_criteria.title.title}%")
+            )
+
+        if search_criteria.isbn:
+            stmt = stmt.where(
+                Libro.isbn.ilike(f"%{search_criteria.isbn.isbn_code}%")
+            )
+
+        if search_criteria.language:
+            stmt = stmt.where(Libro.lenguaje == search_criteria.language.lang)
+
+        if search_criteria.editorial:
+            stmt = stmt.where(
+                Libro.editorial.ilike(f"%{search_criteria.editorial.editorial}%")
+            )
+
+        if search_criteria.authors and search_criteria.authors.authors:
+            stmt = stmt.where(
                 Autor.nombre.ilike(
                     any_(array(
-                        [f"%{author}%" for author in book_criteria.authors.authors]
+                        [f"%{author}%" for author in search_criteria.authors.authors]
                     ))
                 )
             )
 
-        if len(book_criteria.category.categories) > 0:
-            query = query.join(Libro.generos).where(
-                Genero.nombre.ilike(any_(array(
-                        [f"%{category}%" for category in book_criteria.category.categories]
+        if search_criteria.category and search_criteria.category.categories:
+            stmt = stmt.where(
+                Genero.nombre.ilike(
+                    any_(array(
+                        [f"%{category}%" for category in search_criteria.category.categories]
                     ))
                 )
             )
 
-        if book_criteria.from_date:
-            query = query.where(book_criteria.from_date <= Libro.fecha_publicacion)
+        if search_criteria.from_date:
+            stmt = stmt.where(
+                search_criteria.from_date <= Libro.fecha_publicacion
+            )
 
-        if book_criteria.to_date:
-            query = query.where(Libro.fecha_publicacion <= book_criteria.to_date)
+        if search_criteria.to_date:
+            stmt = stmt.where(
+                Libro.fecha_publicacion <= search_criteria.to_date
+            )
 
-        query = query.distinct().order_by(Libro.id).offset(page_limits.starts_at).limit(page_limits.number_of_results)
-        result = await self.async_session.execute(query)
-        libros = list(result.scalars().all())
-        return [
-            self._to_domain(book)
-            for book in libros
-        ]
+        sort_column = _SORT_COLUMN[search_criteria.sort_by]
+        stmt = stmt.order_by(
+            asc(sort_column) if search_criteria.ascending else desc(sort_column)
+        )
+
+        # Pagination
+        stmt = (
+            stmt.distinct()
+            .offset(page_limits.starts_at)
+            .limit(page_limits.number_of_results)
+        )
+
+        books = await self.async_session.execute(stmt)
+        books = books.scalars().all()
+        return [self._to_domain(book) for book in books]
 
     async def save_book(self, book : Book) -> None:
         # Resolve or create Autor/Genero objects while session is open

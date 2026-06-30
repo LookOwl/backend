@@ -6,7 +6,7 @@ from books.application.use_cases.get_book_recommendations import GetBookRecommen
 from books.application.use_cases.get_query_recommendations import GetQueryRecommendations
 from books.application.use_cases.register_book import RegisterBook
 from books.application.use_cases.register_book_copy import RegisterBookCopy
-from books.application.use_cases.search_books import SearchBook
+from books.application.use_cases.search_books import AdvancedSearchBooks, SearchBooks
 
 from books.application.use_cases.update_book_copy import UpdateBookCopy
 from books.domain.book_copy_repository import BookCopyRepository
@@ -21,8 +21,17 @@ from books.infrastructure.adapters.persistence.di import get_sql_book_copy_repos
 def get_search_book_uc(
     book_repo : BookRepository = Depends(get_sql_book_repository),
     uow : UnitOfWork = Depends(get_sql_unit_of_work)
-) -> SearchBook:
-    return SearchBook(
+) -> SearchBooks:
+    return SearchBooks(
+        book_repo,
+        uow
+    )
+
+def get_advanced_search_book_uc(
+    book_repo: BookRepository = Depends(get_sql_book_repository),
+    uow: UnitOfWork = Depends(get_sql_unit_of_work)
+) -> AdvancedSearchBooks:
+    return AdvancedSearchBooks(
         book_repo,
         uow
     )

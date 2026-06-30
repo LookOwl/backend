@@ -1,6 +1,6 @@
 from books.application.use_cases.get_book_recommendations import GetBookRecommendations
 from books.application.use_cases.get_query_recommendations import GetQueryRecommendations
-from books.application.use_cases.search_books import SearchBook
+from books.application.use_cases.search_books import SearchBooks
 from books.domain.book import Book, BookId
 from chatbot.application.ports import ToolExecutorPort
 from chatbot.domain.message import ToolCall
@@ -10,7 +10,7 @@ class BookToolExecutor(ToolExecutorPort):
 
     def __init__(
         self,
-        search_books_uc: SearchBook,
+        search_books_uc: SearchBooks,
         book_recommendations_uc: GetBookRecommendations,
         query_recommendations_uc: GetQueryRecommendations,
     ) -> None:
@@ -31,18 +31,11 @@ class BookToolExecutor(ToolExecutorPort):
 
     async def _handle_search_books(self, args: dict) -> str:
         query = args.get("query", "")
-        # TODO: Replace with actual semantic search by pattern
-        try:
-            results = await self._query_recommendations.execute(
-                query=query, num_recommendations=10
-            )
-        except Exception:
-            results = await self._search_books.execute(
-                title=query,
-                authors=[],
-                limit=10,
-                offset=0,
-            )
+        results = await self._search_books.execute(
+            query=query,
+            limit=10,
+            offset=0,
+        )
         return self._format_books(results)
 
     async def _handle_recommend_by_query(self, args: dict) -> str:

@@ -83,13 +83,15 @@ class ChatOrchestrator(ChatInputPort):
         return [
             ToolDefinition(
                 name="search_books",
-                description="Busca libros en el catálogo de la biblioteca por título, autor o palabras clave de categoría",
+                description="Busca libros en el catálogo de la biblioteca usando texto libre. "
+                            "Realiza una búsqueda en múltiples campos: título, autor, editorial, ISBN y categoría. "
+                            "Útil cuando el usuario da un título, nombre de autor o cualquier palabra clave.",
                 parameters={
                     "type": "object",
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "Consulta de búsqueda (título, autor o palabras clave de categoría)",
+                            "description": "Texto libre para buscar libros (título, autor, editorial, ISBN o categoría)",
                         }
                     },
                     "required": ["query"],
