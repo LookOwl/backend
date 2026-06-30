@@ -14,6 +14,8 @@ import books.infrastructure.persistence.models.genero
 import loans.infrastructure.persistence.models.loan
 import loans.infrastructure.persistence.models.loan_request
 import users.infrastructure.persistence.models.user
+import chatbot.infrastructure.persistence.conversation
+import chatbot.infrastructure.persistence.message
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 

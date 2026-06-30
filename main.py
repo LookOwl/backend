@@ -13,6 +13,7 @@ from books.infrastructure.http.controller.book_copy_controller import router as 
 from books.infrastructure.http.controller.recommendation_controller import router as r3
 from loans.infrastructure.http.http_controller import router as r4
 from users.infrastructure.http.http_controller import router as r5
+from chatbot.infrastructure.http.controller.chat_controller import router as r6
 
 @asynccontextmanager
 async def lifespan(app : FastAPI):
@@ -42,3 +43,4 @@ app.include_router(prefix= "/api", router= r2 )
 app.include_router(prefix= "/api", router= r3 )
 app.include_router(prefix= "/api", router= r4 )
 app.include_router(prefix= "/api", router= r5 )
+app.include_router(prefix= "/api", router= r6 )
