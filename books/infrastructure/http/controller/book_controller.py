@@ -3,52 +3,85 @@ from books.application.use_cases.delete_book import DeleteBook
 from books.application.use_cases.get_book_copies import GetBookCopies
 from books.application.use_cases.register_book import RegisterBook
 from books.application.use_cases.register_book_copy import RegisterBookCopy
-from books.application.use_cases.search_books import SearchBook
+from books.application.use_cases.search_books import AdvancedSearchBooks, SearchBooks
 from books.domain.book import Book, BookId
 from books.domain.book_copy import BookCopy
-from books.infrastructure.di import get_book_copies_uc, get_deleter_book_uc, get_register_book_copies_uc, get_register_book_uc, get_search_book_uc
+from books.infrastructure.di import get_advanced_search_book_uc, get_book_copies_uc, get_deleter_book_uc, get_register_book_copies_uc, get_register_book_uc, get_search_book_uc
 from books.infrastructure.http.dtos.book_copy_dto import BookCopyDto
 from books.infrastructure.http.dtos.book_dto import BookDto
 from books.infrastructure.http.dtos.register_book_copy_dto import RegisterBookCopyDto
 from books.infrastructure.http.dtos.register_book_dto import RegisterBookDto
 from books.application.use_cases.get_book_recommendations import GetBookRecommendations
 from books.infrastructure.di import get_book_recommendations_uc
+from books.infrastructure.http.dtos.search_book_dto import AdvancedSearchBookDto, SearchBookDto
 from shared.infrastructure.di import jwt_auth_guard
 from users.domain.user import User
 from users.domain.user_role import UserRole
 
 router = APIRouter(prefix="/books",tags=["books"])
 
-@router.get("/")
-async def get_books(
-    title:str | None = None,
-    author:str | None= None,
-    limit:int=20,
-    offset:int = 0,
-    search_book : SearchBook = Depends(get_search_book_uc)
+@router.post("/search")
+async def basic_search_books(
+    info: SearchBookDto,
+    search_books: SearchBooks = Depends(get_search_book_uc)
 ):
-    results : list[Book] = await search_book.execute(
-        title=title,
-        authors= [] if not author else [author]  ,
-        limit=limit+1,
-        offset=offset
+
+    results: list[Book] = await search_books.execute(
+        query=info.query,
+        sort_by=info.sort_by,
+        ascending=info.ascending,
+        from_date=info.from_date,
+        to_date=info.to_date,
+        limit=info.limit + 1,
+        offset=info.offset,
     )
 
-    has_next : bool= False
+    has_next = len(results) > info.limit
+    if has_next:
+        results = results[:info.limit]
 
-    if len(results) > limit:
-        has_next = True
-
-    res : dict[str,list[BookDto]|dict[str,int|bool] ] = {
-        "result" : [ BookDto.to_dto(result) for result in results ],
-        "page" : {
-            "offset" : offset,
-            "limit" : limit,
-            "has_next" : has_next
-        }
+    return {
+        "result": [BookDto.to_dto(book) for book in results],
+        "page": {
+            "offset": info.offset,
+            "limit": info.limit,
+            "has_next": has_next,
+        },
     }
 
-    return res
+
+@router.post("/advanced_search")
+async def advanced_search_books(
+    info: AdvancedSearchBookDto,
+    advanced_search: AdvancedSearchBooks = Depends(get_advanced_search_book_uc),
+):
+    results: list[Book] = await advanced_search.execute(
+        title=info.title,
+        authors=info.authors,
+        categories=info.category,
+        isbn=info.isbn,
+        language=info.language,
+        editorial=info.editorial,
+        sort_by=info.sort_by,
+        ascending=info.ascending,
+        from_date=info.from_date,
+        to_date=info.to_date,
+        limit=info.limit + 1,
+        offset=info.offset,
+    )
+
+    has_next = len(results) > info.limit
+    if has_next:
+        results = results[:info.limit]
+
+    return {
+        "result": [BookDto.to_dto(book) for book in results],
+        "page": {
+            "offset": info.offset,
+            "limit": info.limit,
+            "has_next": has_next,
+        },
+    }
 
 @router.post("/register")
 async def register_book(
