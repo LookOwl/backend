@@ -2,11 +2,11 @@ from datetime import date
 
 from pydantic import BaseModel
 from books.domain.book_search_criteria import SortBy
-from shared.infrastructure.http.validators import NonEmptyString, NonNegativeInt
+from shared.infrastructure.http.validators import NonNegativeInt
 
 
 class SearchBookDto(BaseModel):
-    query: NonEmptyString
+    query: str
     sort_by: SortBy | None = None
     ascending: bool = True
     from_date: date | None = None
