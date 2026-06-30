@@ -79,7 +79,6 @@ class TestSearchBooks:
 
         # Assert: verify the pagination values were forwarded
         call_args = mock_book_repo.search_book.call_args
-        criteria: BookSearchCriteria = call_args[0][0]  # first positional arg
         page: ResultPage = call_args[0][1]  # second positional arg
         assert page.starts_at == 20
         assert page.number_of_results == 5
