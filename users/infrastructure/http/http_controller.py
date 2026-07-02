@@ -43,7 +43,8 @@ async def register(
             registerDto.fullname,
             registerDto.contact_number,
             registerDto.email,
-            registerDto.password
+            registerDto.password,
+            registerDto.role
         )
     except Exception as e:
         print(e.__str__())

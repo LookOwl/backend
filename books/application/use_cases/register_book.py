@@ -57,9 +57,9 @@ class RegisterBook:
                 .create(user)
             )
 
-            await self.book_repo.save_book(book)
+            book_id = await self.book_repo.save_book(book)
 
             genres = "".join(book.category.categories)
             prompt = f"{book.title.title} - {book.description.description} - {genres}"
 
-            await self.book_embedding.save(prompt)
+            await self.book_embedding.save(book_id, prompt)
