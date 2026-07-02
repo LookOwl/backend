@@ -165,7 +165,7 @@ class SQLBookRepository(BookRepository):
         books = books.scalars().all()
         return [self._to_domain(book) for book in books]
 
-    async def save_book(self, book : Book) -> None:
+    async def save_book(self, book : Book) -> BookId:
         # Resolve or create Autor/Genero objects while session is open
         resolved_autores = await self._resolve_autores(book.author.authors)
         resolved_generos = await self._resolve_generos(book.category.categories)
@@ -186,7 +186,7 @@ class SQLBookRepository(BookRepository):
         self.async_session.add(libro)
         await self.async_session.flush()
         await self.async_session.refresh(libro)
-        return
+        return BookId(libro.id)
 
     async def update_book(self, book : Book) -> None:
         resolved_autores = await self._resolve_autores(book.author.authors)

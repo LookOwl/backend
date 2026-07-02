@@ -34,6 +34,6 @@ class LibroEmbedding(BaseModel):
 
     id_libro: Mapped[int] = mapped_column(ForeignKey("libros.id"))
     embedding: Mapped[VECTOR] = mapped_column(VECTOR(384))
-    model: Mapped[str] = mapped_column(String(50))
+    model: Mapped[str] = mapped_column(String(255))
 
     libro: Mapped[Libro] = relationship(back_populates="embedding")

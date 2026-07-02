@@ -29,11 +29,12 @@ class SQLBookEmbeddingRepository(BookEmbeddingRepository):
     def __init__(self, async_session: AsyncSession) -> None:
         self.async_session = async_session
 
-    async def save(self, prompt: str) -> None:
+    async def save(self, book_id: BookId, prompt: str) -> None:
         model = _get_model()
         prompt_embedding = await asyncio.to_thread(model.encode, prompt)
 
         libro_embedding = LibroEmbedding(
+            id_libro=book_id.id,
             embedding=prompt_embedding.tolist(),
             model=_MODEL_NAME
         )

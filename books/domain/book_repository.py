@@ -18,7 +18,8 @@ class BookRepository(ABC):
         pass
 
     @abstractmethod
-    async def save_book(self, book : Book) -> None:
+    async def save_book(self, book : Book) -> BookId:
+        """Persist a new book and return its assigned ID."""
         pass
 
     @abstractmethod
