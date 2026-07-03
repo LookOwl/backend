@@ -189,26 +189,25 @@ class SQLBookRepository(BookRepository):
         return BookId(libro.id)
 
     async def update_book(self, book : Book) -> None:
+        libro = await self.async_session.get(Libro, book.book_id.id)
+        if not libro or not libro.activo:
+            return
+
         resolved_autores = await self._resolve_autores(book.author.authors)
         resolved_generos = await self._resolve_generos(book.category.categories)
-        await self.async_session.execute(
-            update(Libro)
-            .where(Libro.id == book.book_id.id)
-            .values(
-                titulo = book.title.title,
-                isbn = book.isbn.isbn_code if book.isbn else None,
-                descripcion = book.description.description if book.description else None,
-                editorial = book.editorial.editorial if book.editorial else None,
-                fecha_publicacion = book.publication_date.pub_date if book.publication_date else None,
-                url_portada = book.cover_url.url if book.cover_url else None,
-                lenguaje = book.language.lang,
-                num_paginas = book.page_count.count if book.page_count else None,
-                autores = resolved_autores,
-                generos = resolved_generos,
-            )
-        )
+
+        libro.titulo = book.title.title
+        libro.isbn = book.isbn.isbn_code if book.isbn else None
+        libro.descripcion = book.description.description
+        libro.editorial = book.editorial.editorial if book.editorial else None
+        libro.fecha_publicacion = book.publication_date.pub_date if book.publication_date else None
+        libro.url_portada = book.cover_url.url if book.cover_url else None
+        libro.lenguaje = book.language.lang
+        libro.num_paginas = book.page_count.count if book.page_count else None
+        libro.autores = resolved_autores
+        libro.generos = resolved_generos
+
         await self.async_session.flush()
-        return
 
     async def delete_book(self, book_id : BookId) -> None:
         await self.async_session.execute(

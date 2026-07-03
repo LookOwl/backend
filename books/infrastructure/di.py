@@ -1,6 +1,7 @@
 from fastapi import Depends
 from books.application.use_cases.delete_book import DeleteBook
 from books.application.use_cases.delete_book_copy import DeleteBookCopy
+from books.application.use_cases.get_book_by_id import GetBookById
 from books.application.use_cases.get_book_copies import GetBookCopies
 from books.application.use_cases.get_book_recommendations import GetBookRecommendations
 from books.application.use_cases.get_query_recommendations import GetQueryRecommendations
@@ -8,6 +9,7 @@ from books.application.use_cases.register_book import RegisterBook
 from books.application.use_cases.register_book_copy import RegisterBookCopy
 from books.application.use_cases.search_books import AdvancedSearchBooks, SearchBooks
 
+from books.application.use_cases.update_book import UpdateBook
 from books.application.use_cases.update_book_copy import UpdateBookCopy
 from books.domain.book_copy_repository import BookCopyRepository
 from books.domain.book_embedding_repository import BookEmbeddingRepository
@@ -17,6 +19,15 @@ from shared.infrastructure.persistence.di import get_sql_unit_of_work
 from users.domain.user_repository import UserRepository
 from users.infrastructure.di import get_sql_user_repo
 from books.infrastructure.adapters.persistence.di import get_sql_book_copy_repository, get_sql_book_embedding_repository, get_sql_book_repository
+
+def get_search_book_by_id_uc(
+    book_repo : BookRepository = Depends(get_sql_book_repository),
+    uow : UnitOfWork = Depends(get_sql_unit_of_work)
+) -> GetBookById:
+    return GetBookById(
+        book_repo,
+        uow
+    )
 
 def get_search_book_uc(
     book_repo : BookRepository = Depends(get_sql_book_repository),
@@ -81,6 +92,17 @@ def get_updater_book_copies_uc(
     return UpdateBookCopy(
         user_repository,
         book_copy_repository,
+        uow
+    )
+
+def get_updater_book_uc(
+    user_repository : UserRepository = Depends(get_sql_user_repo),
+    book_repository : BookRepository = Depends(get_sql_book_repository),
+    uow : UnitOfWork = Depends(get_sql_unit_of_work)
+) -> UpdateBook:
+    return UpdateBook(
+        user_repository,
+        book_repository,
         uow
     )
 

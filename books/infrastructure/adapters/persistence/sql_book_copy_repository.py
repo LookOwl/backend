@@ -75,7 +75,7 @@ class SQLBookCopyRepository(BookCopyRepository):
         (
             await self.async_session.execute(
                 update(Ejemplar)
-                .where(Ejemplar.codigo == book_copy.copy_id.physical_id)
+                .where(Ejemplar.codigo == book_copy.copy_id.physical_id, Ejemplar.activo)
                 .values(
                     codigo = book_copy.copy_id.physical_id,
                     libro_id = book_copy.book_id.id,
