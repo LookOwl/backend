@@ -1,7 +1,7 @@
 from sqlalchemy import func, update, select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from books.domain.book import BookId
-from books.domain.book_copy import BookCopy, BookCopyId, BookCopyStatus
+from books.domain.book_copy import BookCopy, BookCopyId, BookCopyStatus, PhysicalBookCopyId
 from books.domain.book_copy_repository import BookCopyRepository
 from books.infrastructure.persistence.models.book_copy import Ejemplar
 
@@ -22,7 +22,23 @@ class SQLBookCopyRepository(BookCopyRepository):
                 .execute(
                     select(Ejemplar)
                     .where(
-                        Ejemplar.codigo == copy_id.physical_id,
+                        Ejemplar.id == copy_id.id,
+                        Ejemplar.activo
+                    )
+                )
+            ).scalar_one_or_none()
+        if not result:
+            return None
+        return self._to_domain(result)
+
+    async def get_by_physical_id(self, physical_id: PhysicalBookCopyId) -> BookCopy | None:
+        result = (
+            await self
+                .async_session
+                .execute(
+                    select(Ejemplar)
+                    .where(
+                        Ejemplar.codigo == physical_id.physical_id,
                         Ejemplar.activo
                     )
                 )
@@ -63,7 +79,7 @@ class SQLBookCopyRepository(BookCopyRepository):
     async def save_book_copy(self, book_copy : BookCopy) -> None:
         self.async_session.add(
             Ejemplar(
-                codigo = book_copy.copy_id.physical_id,
+                codigo = book_copy.physical_copy_id.physical_id,
                 libro_id = book_copy.book_id.id,
                 estado = book_copy.status
             )
@@ -75,9 +91,9 @@ class SQLBookCopyRepository(BookCopyRepository):
         (
             await self.async_session.execute(
                 update(Ejemplar)
-                .where(Ejemplar.codigo == book_copy.copy_id.physical_id, Ejemplar.activo)
+                .where(Ejemplar.id == book_copy.id.id, Ejemplar.activo)
                 .values(
-                    codigo = book_copy.copy_id.physical_id,
+                    codigo = book_copy.physical_copy_id.physical_id,
                     libro_id = book_copy.book_id.id,
                     estado = book_copy.status
                 )
@@ -106,7 +122,7 @@ class SQLBookCopyRepository(BookCopyRepository):
         (
             await self.async_session.execute(
                 update(Ejemplar)
-                .where(Ejemplar.codigo == book_copy.physical_id)
+                .where(Ejemplar.id == book_copy.id)
                 .values(activo=False)
             )
         )
@@ -116,7 +132,8 @@ class SQLBookCopyRepository(BookCopyRepository):
 
     def _to_domain(self, ejemplar: Ejemplar) -> BookCopy:
         return BookCopy(
-            BookCopyId(ejemplar.codigo),
+            BookCopyId(ejemplar.id),
+            PhysicalBookCopyId(ejemplar.codigo),
             BookId(ejemplar.libro_id),
             ejemplar.estado
         )

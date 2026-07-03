@@ -1,12 +1,16 @@
 from abc import ABC, abstractmethod
 
-from books.domain.book_copy import BookCopy, BookCopyId
+from books.domain.book_copy import BookCopy, BookCopyId, PhysicalBookCopyId
 from books.domain.book import  BookId
 
 class BookCopyRepository(ABC):
 
     @abstractmethod
     async def get_by_id(self, copy_id : BookCopyId) -> BookCopy | None:
+        pass
+
+    @abstractmethod
+    async def get_by_physical_id(self, physical_id : PhysicalBookCopyId) -> BookCopy | None:
         pass
 
     @abstractmethod
