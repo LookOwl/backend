@@ -19,8 +19,6 @@ router = APIRouter(prefix="/request",tags=["request"])
 @router.get("/{book_id}")
 async def getLoanRequests(
     book_id : int,
-    limit:int = 20,
-    offset:int = 0,
     get_requests_uc : GetPriviledgedRequests = Depends(get_priviledged_requests_uc), 
     user : User = Depends(jwt_auth_guard)
 ):
