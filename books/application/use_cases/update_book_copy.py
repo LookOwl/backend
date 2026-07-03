@@ -1,4 +1,4 @@
-from books.domain.book_copy import BookCopy, BookCopyId, BookCopyStatus
+from books.domain.book_copy import BookCopy, BookCopyStatus, PhysicalBookCopyId
 from books.domain.book_copy_repository import BookCopyRepository
 from shared.application.unit_of_work import UnitOfWork
 from users.domain.user import User
@@ -29,7 +29,7 @@ class UpdateBookCopy:
             if not user:
                 raise Exception("User not found")
 
-            book_copy : BookCopy | None = await self.book_copy_repository.get_by_id(BookCopyId(physical_id=copy_id))
+            book_copy : BookCopy | None = await self.book_copy_repository.get_by_physical_id(PhysicalBookCopyId(copy_id))
             if not book_copy:
                 raise Exception("Book copy not found")
 

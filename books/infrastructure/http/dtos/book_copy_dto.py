@@ -10,6 +10,6 @@ class BookCopyDto(BaseModel):
     @staticmethod
     def to_dto(book_copy: BookCopy) -> "BookCopyDto":
         return BookCopyDto(
-            copy_id=book_copy.copy_id.physical_id,
+            copy_id=book_copy.physical_copy_id.physical_id,
             status=book_copy.status.value
         )

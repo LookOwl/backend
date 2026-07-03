@@ -1,5 +1,5 @@
 from books.domain.book import Book, BookId
-from books.domain.book_copy import BookCopy, BookCopyId, BookCopyStatus
+from books.domain.book_copy import BookCopy, BookCopyId, BookCopyStatus, PhysicalBookCopyId
 from books.domain.book_copy_repository import BookCopyRepository
 from books.domain.book_repository import BookRepository
 from shared.application.unit_of_work import UnitOfWork
@@ -40,7 +40,8 @@ class RegisterBookCopy:
                 raise Exception("Book not found")
 
             book_copy : BookCopy = BookCopy(
-                copy_id=BookCopyId(copy_id),
+                id=BookCopyId(0),
+                physical_copy_id=PhysicalBookCopyId(copy_id),
                 book_id=BookId(book_id),
                 status=BookCopyStatus.DISPONIBLE
             )
