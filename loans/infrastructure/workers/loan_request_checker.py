@@ -6,7 +6,7 @@ from loans.application.loan_request_dispatcher import LoanRequestEventDispatcher
 from loans.domain.loan_request_event import LoanRequestInterestTimeExpired, LoanRequestPickupTimeExpired
 from loans.domain.loan_request import LoanRequest, LoanRequestId, LoanRequestTimeRequested, LoanRequestWaitTime
 from users.domain.user import UserId
-from books.domain.book_copy import BookCopyId
+from books.domain.book_copy import PhysicalBookCopyId
 from books.domain.book import BookId
 class LoanRequestConsistencySubject:
 
@@ -55,7 +55,7 @@ class LoanRequestConsistencySubject:
                         LoanRequestId(result.id),
                     UserId(result.id_usuario),
                     BookId(result.id_libro),
-                    BookCopyId(result.codigo_ejemplar) if result.codigo_ejemplar else None ,
+                    PhysicalBookCopyId(result.codigo_ejemplar) if result.codigo_ejemplar else None ,
                     LoanRequestWaitTime(result.tiempo_espera),
                     LoanRequestTimeRequested(result.tiempo_prestamo),
                     result.estado,
@@ -72,7 +72,7 @@ class LoanRequestConsistencySubject:
                         LoanRequestId(result.id),
                     UserId(result.id_usuario),
                     BookId(result.id_libro),
-                    BookCopyId(result.codigo_ejemplar) if result.codigo_ejemplar else None ,
+                    PhysicalBookCopyId(result.codigo_ejemplar) if result.codigo_ejemplar else None ,
                     LoanRequestWaitTime(result.tiempo_espera),
                     LoanRequestTimeRequested(result.tiempo_prestamo),
                     result.estado,

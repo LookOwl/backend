@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import  datetime, timedelta
 
 from books.domain.book import BookId
-from books.domain.book_copy import BookCopyId
+from books.domain.book_copy import PhysicalBookCopyId
 from users.domain.user_id import UserId
 from loans.domain.loan_request_status import LoanRequestStatus
 
@@ -30,7 +30,7 @@ class LoanRequest:
     loan_req_id : LoanRequestId
     user_id: UserId
     book_id: BookId
-    book_copy_code : BookCopyId | None
+    book_copy_code : PhysicalBookCopyId | None
     wait_time: LoanRequestWaitTime  
     loan_time: LoanRequestTimeRequested
     status: LoanRequestStatus
@@ -43,6 +43,6 @@ class LoanRequest:
         else:
             raise Exception("Not possible to expire")
 
-    def assign_book(self, copy_id : BookCopyId):
+    def assign_book(self, copy_id : PhysicalBookCopyId):
         self.book_copy_code = copy_id
         self.status = LoanRequestStatus.ASIGNADA 
