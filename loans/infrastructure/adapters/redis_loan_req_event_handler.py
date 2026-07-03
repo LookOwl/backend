@@ -1,5 +1,5 @@
 from books.domain.book_copy import BookCopy
-from loans.application.ports import LoanRequestEventHandler
+from loans.application.loan_request_event_handler import LoanRequestEventHandler
 from loans.domain.loan_request import LoanRequest
 from shared.infrastructure.cache.lock import RedisLockManager
 from shared.infrastructure.cache.redis_controller import RedisController

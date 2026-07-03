@@ -73,7 +73,7 @@ async def assignBookCopyToRequest(
         )
     except Exception as e:
         raise HTTPException(
-            status_code=500,
+            status_code=503,
             detail=f"Fatal error: {e.__str__()} "
         )
 

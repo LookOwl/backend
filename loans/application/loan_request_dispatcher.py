@@ -1,4 +1,4 @@
-from loans.application.ports import LoanRequestEventHandler
+from loans.application.loan_request_event_handler import LoanRequestEventHandler
 from shared.application.event_dispatcher import AppEventDispatcher
 from shared.application.event_handler import EventHandler
 from shared.domain.event_type import EventType

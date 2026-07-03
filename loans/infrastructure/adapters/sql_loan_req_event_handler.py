@@ -1,4 +1,4 @@
-from loans.application.ports import LoanRequestEventHandler
+from loans.application.loan_request_event_handler import LoanRequestEventHandler
 from loans.domain.loan_request_status import LoanRequestStatus
 from users.domain.user import User
 from loans.domain.loan_request import LoanRequest

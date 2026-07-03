@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from loans.infrastructure.persistence.models.loan_request import SolicitudLibro
@@ -8,7 +10,7 @@ from loans.domain.loan_request import LoanRequest, LoanRequestId, LoanRequestTim
 from users.domain.user import UserId
 from books.domain.book_copy import BookCopyId
 from books.domain.book import BookId
-class LoanRequestConsistencySubject:
+class LoanRequestConsistencyVerifier:
 
     session : AsyncSession
     subject : LoanRequestEventDispatcher
@@ -36,7 +38,7 @@ class LoanRequestConsistencySubject:
             )
         ).scalars().all()
         #Find expired waiting requests 
-        results2 = (
+        results2: Sequence[SolicitudLibro] = (
         await self.session.execute(
                 select(SolicitudLibro)
                 .where(SolicitudLibro.estado == LoanRequestStatus.NOTIFICADA)
@@ -55,7 +57,7 @@ class LoanRequestConsistencySubject:
                         LoanRequestId(result.id),
                     UserId(result.id_usuario),
                     BookId(result.id_libro),
-                    BookCopyId(result.codigo_ejemplar) if result.codigo_ejemplar else None ,
+                    BookCopyId(result.id_ejemplar) if result.id_ejemplar else None ,
                     LoanRequestWaitTime(result.tiempo_espera),
                     LoanRequestTimeRequested(result.tiempo_prestamo),
                     result.estado,
@@ -72,7 +74,7 @@ class LoanRequestConsistencySubject:
                         LoanRequestId(result.id),
                     UserId(result.id_usuario),
                     BookId(result.id_libro),
-                    BookCopyId(result.codigo_ejemplar) if result.codigo_ejemplar else None ,
+                    BookCopyId(result.id_ejemplar) if result.id_ejemplar else None ,
                     LoanRequestWaitTime(result.tiempo_espera),
                     LoanRequestTimeRequested(result.tiempo_prestamo),
                     result.estado,

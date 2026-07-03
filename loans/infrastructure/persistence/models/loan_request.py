@@ -34,7 +34,7 @@ class SolicitudLibro(BaseModel):
 
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
     id_libro: Mapped[int] = mapped_column(ForeignKey("libros.id"))
-    codigo_ejemplar: Mapped[Optional[str]] = mapped_column(ForeignKey("ejemplares.codigo"))
+    id_ejemplar: Mapped[Optional[int]] = mapped_column(ForeignKey("ejemplares.id"))
     tiempo_espera: Mapped[int]
     tiempo_prestamo: Mapped[int]
     estado: Mapped[LoanRequestStatus] = mapped_column(default=LoanRequestStatus.PENDIENTE)
