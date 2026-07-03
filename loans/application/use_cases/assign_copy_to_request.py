@@ -3,7 +3,7 @@ from loans.domain.loan_request_event import LoanRequestCopyAssigned
 from shared.application.unit_of_work import UnitOfWork
 from loans.domain.loan_request_repo import LoanRequestRepository
 from books.domain.book_copy_repository import BookCopyRepository
-from books.domain.book_copy import BookCopyId, BookCopyStatus
+from books.domain.book_copy import BookCopyStatus, PhysicalBookCopyId
 from loans.domain.loan_request import LoanRequestId, LoanRequestStatus
 
 class AssignBookCopyToLoanRequestUseCase:
@@ -25,19 +25,19 @@ class AssignBookCopyToLoanRequestUseCase:
         self.book_copy_repo = book_copy_repo 
         self.loan_request_event_dispatcher = loan_request_event_dispatcher
 
-    async def execute( self, req_id: int, book_copy_id : int ):
+    async def execute( self, req_id: int, book_copy_code : str ):
         async with self.uow:
             #Check consistency: the loan exists?
             loan_request = await self.loan_req_repo.get_by_id(LoanRequestId(req_id))
             if loan_request is None or loan_request.status != LoanRequestStatus.PENDIENTE: raise InvalidLoanRequestException
             #Check consistency: is the book_copy free?
-            book_copy = await self.book_copy_repo.get_by_id(BookCopyId(book_copy_id))
+            book_copy = await self.book_copy_repo.get_by_physical_id(PhysicalBookCopyId(book_copy_code))
             
             if book_copy is None: raise CopyNoExistsException
             if book_copy.status != BookCopyStatus.DISPONIBLE: raise CopyNoAvailableException
             #else
             book_copy.reserve()
-            loan_request.assign_book(BookCopyId(book_copy_id))
+            loan_request.assign_book(book_copy.physical_copy_id)
 
             await self.loan_req_repo.update_loan_request(loan_request)
             await self.book_copy_repo.update_book_copy(book_copy)

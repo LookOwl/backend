@@ -1,7 +1,7 @@
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from books.domain.book import BookId
-from books.domain.book_copy import BookCopyId
+from books.domain.book_copy import PhysicalBookCopyId
 from users.domain.user import UserId
 from loans.domain.loan_request import LoanRequest, LoanRequestId, LoanRequestStatus, LoanRequestTimeRequested, LoanRequestWaitTime
 from loans.domain.loan_request_repo import LoanRequestRepository
@@ -51,7 +51,6 @@ class SQLLoanRequestRepository(LoanRequestRepository):
                 .select_from(SolicitudLibro)
                 .where(SolicitudLibro.id_libro == id.id)
                 .where(SolicitudLibro.estado == LoanRequestStatus.PENDIENTE)
-                .order_by(SolicitudLibro.created_at)
             )
         ).scalar_one()
         
@@ -102,7 +101,7 @@ class SQLLoanRequestRepository(LoanRequestRepository):
             LoanRequestId(solicitud.id),
             UserId(solicitud.id_usuario),
             BookId(solicitud.id_libro),
-            BookCopyId(solicitud.codigo_ejemplar) if solicitud.codigo_ejemplar else None ,
+            PhysicalBookCopyId(solicitud.codigo_ejemplar) if solicitud.codigo_ejemplar else None ,
             LoanRequestWaitTime(solicitud.tiempo_espera),
             LoanRequestTimeRequested(solicitud.tiempo_prestamo),
             solicitud.estado,
