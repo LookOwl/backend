@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from loans.application.use_cases.assign_copy_to_request import AssignBookCopyToLoanRequestUseCase, CopyNoAvailableException, CopyNoExistsException, InvalidLoanRequestException
 from loans.domain.loan_request import LoanRequest
-from loans.infrastructure.di import get_priviledged_requests_uc, get_request_loan_uc
+from loans.infrastructure.di import get_assign_book_copy_uc, get_priviledged_requests_uc, get_request_loan_uc
 from loans.infrastructure.http.dtos.assign_book_dto import AssignBookDto
 from loans.infrastructure.http.dtos.loan_request_dto import LoanRequestDto
 from shared.infrastructure.di import jwt_auth_guard
@@ -43,11 +43,11 @@ async def getLoanRequests(
     
 #Ruta para alterar (asignar una copia física a una) solicitud de préstamo
 
-@router.post("/request/assign")
+@router.post("/assign")
 async def assignBookCopyToRequest(
     body : AssignBookDto,
     user : User  = Depends(jwt_auth_guard),
-    use_case : AssignBookCopyToLoanRequestUseCase = Depends()
+    use_case : AssignBookCopyToLoanRequestUseCase = Depends(get_assign_book_copy_uc)
 ): 
     if(user.role != UserRole.BIBLIOTECARIO): 
         raise HTTPException(
@@ -55,7 +55,7 @@ async def assignBookCopyToRequest(
             detail="Role not valid"
         )
     try:
-        
+
         await use_case.execute(body.req_id,body.book_copy_id)
     
     except InvalidLoanRequestException:
@@ -80,7 +80,7 @@ async def assignBookCopyToRequest(
         )
 
 #Ruta para emitir una nueva solicitud de préstamo. Usable por todo usuario autenticado
-@router.post("/request")
+@router.post("/")
 async def requestLoan(
     loan_dto : RequestLoanDto, 
     user : User = Depends(jwt_auth_guard),
