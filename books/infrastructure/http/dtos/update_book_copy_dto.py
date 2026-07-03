@@ -3,4 +3,4 @@ from books.domain.book_copy import BookCopyStatus
 
 
 class UpdateBookCopyStatusDTO(BaseModel):
-    status: BookCopyStatus
+    status: BookCopyStatus = BookCopyStatus.DISPONIBLE
