@@ -3,7 +3,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from users.domain.auth_guard import AuthGuard
 from users.domain.token import EncryptedToken
-from users.infrastructure.adapters.pg_user_repository import SQLUserRepository
+from users.infrastructure.adapters.sql_user_repository import SQLUserRepository
 from shared.infrastructure.adapters.jwt_auth_guard import JWTAuthGuard
 from users.application.ports import TokenHandler
 from users.domain.user_repository import UserRepository

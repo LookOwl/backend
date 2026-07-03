@@ -1,10 +1,12 @@
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from loans.domain.loan_request import LoanRequestId
 from users.domain.user import User
 from users.domain.user_credential import HashedPassword, UserCredentials
 from users.domain.user_id import UserId
+from users.domain.user_notification import UserNotification
 from users.domain.user_repository import UserRepository
-from users.infrastructure.persistence.models.user import Usuario
+from users.infrastructure.persistence.models.user import Usuario, UsuarioSolicitudNotificationes
 
 
 class SQLUserRepository(UserRepository):
@@ -54,6 +56,32 @@ class SQLUserRepository(UserRepository):
                 HashedPassword(user.hash_contrasena)
             )
         )
+    
+    async def get_notifications(self, user_id: UserId) -> list[UserNotification]:
+        results = (
+            await self.async_session.execute(
+                select(UsuarioSolicitudNotificationes)
+                .where(UsuarioSolicitudNotificationes.usuario_id == user_id.uid)
+            )
+        ).scalars().all()
+        return [
+            UserNotification(
+                UserId(result.usuario_id),
+                result.tipo,
+                LoanRequestId(result.solicitud_id)
+            ) for result in results
+        ]
+    
+    async def post_notification(self, notification: UserNotification) -> None:
+        self.async_session.add(
+            UsuarioSolicitudNotificationes(
+                usuario_id = notification.user.uid ,
+                solicitud_id = notification.loan_req_id.id,
+                tipo = notification.type
+            )
+        )
+        await self.async_session.flush()
+        return
     
     
     async def find_user_credential(self, email : str ) -> UserCredentials | None:

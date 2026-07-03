@@ -9,7 +9,7 @@ from users.application.use_cases.register_user import RegisterUser
 from users.domain.user_repository import UserRepository
 from users.infrastructure.adapters.bcrypt_hasher import BcryptPasswordHasher
 from users.infrastructure.adapters.jwt_token_handler import JWTTokenHandler
-from users.infrastructure.adapters.pg_user_repository import SQLUserRepository
+from users.infrastructure.adapters.sql_user_repository import SQLUserRepository
 
 def get_sql_user_repo(
     async_session : AsyncSession = Depends(get_async_sql_session)
