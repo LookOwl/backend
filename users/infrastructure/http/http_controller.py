@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from shared.infrastructure.di import jwt_auth_guard
-from users.application.delete_notification import DeleteNotificationsUseCase
+from users.application.use_cases.delete_notification import DeleteNotificationsUseCase
 from users.application.use_cases.get_notifications import GetNotificationsUseCase
 from users.application.use_cases.register_user import RegisterUser
 from users.domain.token import EncryptedToken

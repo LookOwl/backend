@@ -33,7 +33,7 @@ async def start_loan(
             detail="Unauthorized : Only BIBLIOTECARIO role"
         )
     try:
-        await use_case.execute(body.req_id)
+        await use_case.execute(body.book_physical_copy)
     except LoanRequestNotFoundException:
         raise HTTPException(
             status_code=422,

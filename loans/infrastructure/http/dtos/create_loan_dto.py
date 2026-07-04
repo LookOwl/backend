@@ -1,4 +1,6 @@
-from pydantic import BaseModel, NonNegativeInt
+from pydantic import BaseModel
+
+from shared.infrastructure.http.validators import NonEmptyString
 
 class CreateLoanDto(BaseModel):
-    req_id : NonNegativeInt
+    book_physical_copy : NonEmptyString

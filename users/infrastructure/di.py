@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from shared.infrastructure.persistence.di import get_sql_unit_of_work
 from shared.application.unit_of_work import UnitOfWork
 from shared.infrastructure.persistence.di import get_async_sql_session
-from users.application.delete_notification import DeleteNotificationsUseCase
+from users.application.use_cases.delete_notification import DeleteNotificationsUseCase
 from users.application.ports import PasswordHasher, TokenHandler
 from users.application.use_cases.get_notifications import GetNotificationsUseCase
 from users.application.use_cases.login_user import LoginUser
