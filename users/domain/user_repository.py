@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from users.domain.user import User
 from users.domain.user_id import UserId
 from users.domain.user_credential import UserCredentials
-from users.domain.user_notification import UserNotification
+from users.domain.user_notification import NotificationId, UserNotification
 
 class UserRepository(ABC):
     
@@ -32,6 +32,10 @@ class UserRepository(ABC):
 
     @abstractmethod
     async def delete_user( self, id : UserId ) -> None:
+        pass
+
+    @abstractmethod
+    async def delete_notification( self, id : NotificationId ) -> None:
         pass
 
     @abstractmethod

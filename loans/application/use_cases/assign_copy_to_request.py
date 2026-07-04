@@ -37,7 +37,7 @@ class AssignBookCopyToLoanRequestUseCase:
             if book_copy.status != BookCopyStatus.DISPONIBLE: raise CopyNoAvailableException
             #else
             book_copy.reserve()
-            loan_request.assign_book(book_copy.physical_copy_id)
+            loan_request.assign_book(book_copy.id)
 
             await self.loan_req_repo.update_loan_request(loan_request)
             await self.book_copy_repo.update_book_copy(book_copy)

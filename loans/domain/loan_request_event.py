@@ -13,9 +13,9 @@ class LoanRequestCreated(LoanRequestEvent):
     loan : LoanRequest
     user : User
 
-    def __init__(self, id : LoanRequest, user : User) -> None:
+    def __init__(self, loan : LoanRequest, user : User) -> None:
         super().__init__()
-        self.loan = id
+        self.loan = loan
         self.user = user
 
     def get_type(self):

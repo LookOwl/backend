@@ -1,4 +1,4 @@
-from loans.application.ports import LoanRequestEventHandler
+from loans.application.loan_request_event_handler import LoanRequestEventHandler
 from loans.domain.loan_request_status import LoanRequestStatus
 from users.domain.user import User
 from loans.domain.loan_request import LoanRequest
@@ -6,7 +6,7 @@ from books.domain.book_copy import BookCopy
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from shared.infrastructure.persistence.sql_unit_of_work import SQLUnitOfWork
 from loans.infrastructure.adapters.sql_loan_req_repository import SQLLoanRequestRepository
-from users.domain.user_notification import NotificationType, UserNotification
+from users.domain.user_notification import NotificationId, NotificationType, UserNotification
 from users.infrastructure.adapters.sql_user_repository import SQLUserRepository
 
 class SQLLoanRequestEventHandler(LoanRequestEventHandler):
@@ -36,6 +36,7 @@ class SQLLoanRequestEventHandler(LoanRequestEventHandler):
                 #And notify about it
                 await user_repo.post_notification(
                     UserNotification(
+                        NotificationId(0),
                         loan.user_id,
                         NotificationType.INTEREST_TIME_EXPIRED,
                         loan.loan_req_id
@@ -51,6 +52,7 @@ class SQLLoanRequestEventHandler(LoanRequestEventHandler):
             user_repo = SQLUserRepository(session)
             async with uow:
                 await user_repo.post_notification(UserNotification(
+                    NotificationId(0),
                     loan.user_id,
                     NotificationType.REQ_ASSIGNED,
                     loan.loan_req_id
@@ -70,6 +72,7 @@ class SQLLoanRequestEventHandler(LoanRequestEventHandler):
                 #And notify about it
                 await user_repo.post_notification(
                     UserNotification(
+                        NotificationId(0),
                         loan.user_id,
                         NotificationType.INTEREST_TIME_EXPIRED,
                         loan.loan_req_id

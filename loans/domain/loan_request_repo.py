@@ -1,12 +1,17 @@
 from abc import ABC, abstractmethod
 
 from books.domain.book import BookId
+from books.domain.book_copy import BookCopyId
 from loans.domain.loan_request import LoanRequest, LoanRequestId
 
 class LoanRequestRepository(ABC):
 
     @abstractmethod
     async def get_by_id(self, id: LoanRequestId) -> LoanRequest | None:
+        pass
+
+    @abstractmethod
+    async def get_by_copy_id(self, id : BookCopyId) -> LoanRequest | None:
         pass
 
     @abstractmethod
