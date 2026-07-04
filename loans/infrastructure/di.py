@@ -3,8 +3,12 @@ from fastapi import Depends, Request
 from books.application.book_availability_facade import BookAvailabilityFacade
 from books.domain.book_copy_repository import BookCopyRepository
 from books.domain.book_repository import BookRepository
+from loans.application.loan_dispatcher import LoanEventDispatcher
 from loans.application.use_cases.assign_copy_to_request import AssignBookCopyToLoanRequestUseCase
+from loans.application.use_cases.get_loans_by_book import GetLoansOfBookUseCase
+from loans.application.use_cases.get_loans_by_user import GetLoansOfUserUseCase
 from loans.application.use_cases.register_new_loan import CreateLoanUseCase
+from loans.application.use_cases.return_book import ReturnBookUseCase
 from loans.domain.loan_repo import LoanRepository
 from loans.domain.loan_request_repo import LoanRequestRepository
 
@@ -25,6 +29,11 @@ def get_loan_request_dispatcher(
     assert isinstance(request.app.state.loan_request_dispatcher, LoanRequestEventDispatcher)
     return request.app.state.loan_request_dispatcher
 
+def get_loan_dispatcher(
+    request : Request
+):
+    assert isinstance(request.app.state.loan_dispatcher, LoanEventDispatcher)
+    return request.app.state.loan_dispatcher
 
 def get_priviledged_requests_uc(
         uow: UnitOfWork = Depends(get_sql_unit_of_work), 
@@ -79,4 +88,33 @@ def get_start_loan_uc(
         uow,
         loan_req_repo,
         loan_repo
+    )
+
+def get_loans_of_user_uc(
+    uow : UnitOfWork = Depends(get_sql_unit_of_work),
+    loan_repo : LoanRepository = Depends(get_sql_loan_repo)
+):
+    return GetLoansOfUserUseCase(
+        uow,
+        loan_repo
+    )
+
+def get_loans_of_book_uc(
+    uow : UnitOfWork = Depends(get_sql_unit_of_work),
+    loan_repo : LoanRepository = Depends(get_sql_loan_repo)
+):
+    return GetLoansOfBookUseCase(
+        uow,
+        loan_repo
+    )
+
+def get_return_book_uc(
+    uow : UnitOfWork = Depends(get_sql_unit_of_work),
+    loan_repo : LoanRepository = Depends(get_sql_loan_repo),
+    loan_event_dispatcher : LoanEventDispatcher = Depends(get_loan_dispatcher)
+):
+    return ReturnBookUseCase(
+        uow,
+        loan_repo,
+        loan_event_dispatcher
     )

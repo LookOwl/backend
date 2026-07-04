@@ -1,4 +1,4 @@
-from pydantic import NonNegativeInt
+from pydantic import BaseModel, NonNegativeInt
 
-class CreateLoanDto:
+class CreateLoanDto(BaseModel):
     req_id : NonNegativeInt
