@@ -4,8 +4,10 @@ from sqlalchemy.orm import selectinload
 
 from books.domain.book import BookId
 from books.domain.book_copy import BookCopyId, PhysicalBookCopyId
+from books.infrastructure.persistence.models.book_copy import Ejemplar
 from loans.domain.loan import LoanId, UserId
 from loans.domain.loan_repo import LoanRepository
+from loans.domain.loan_request import LoanRequestId
 from sqlalchemy.ext.asyncio import AsyncSession
 from loans.infrastructure.persistence.models.loan import Prestamo
 from loans.domain.loan import Loan
@@ -52,7 +54,8 @@ class SQLLoanRepository(LoanRepository):
         results = (
             await self.async_session.execute(
                 select(Prestamo)
-                .where(Prestamo.id_ejemplar == id.id)
+                .join(Prestamo.ejemplar)
+                .where(Ejemplar.libro_id == id.id)
                 .options(
                     selectinload(Prestamo.ejemplar)
                 )
@@ -65,7 +68,8 @@ class SQLLoanRepository(LoanRepository):
         result = (
             await self.async_session.execute(
                 select(Prestamo)
-                .where(Prestamo.id_ejemplar == id)
+                .join(Prestamo.ejemplar)
+                .where(Ejemplar.codigo == id.physical_id)
                 .options(
                     selectinload(Prestamo.ejemplar)
                 )
@@ -83,7 +87,8 @@ class SQLLoanRepository(LoanRepository):
                 fecha_aprobacion = loan.approval_date,
                 fecha_vencimiento = loan.due_date,
                 fecha_regreso = loan.return_date,
-                estado = loan.status 
+                estado = loan.status,
+                solicitud_id = loan.loan_request_id.id
             )
         )
         await self.async_session.flush()
@@ -125,5 +130,6 @@ class SQLLoanRepository(LoanRepository):
             prestamo.fecha_aprobacion,
             prestamo.fecha_vencimiento,
             prestamo.fecha_regreso,
-            prestamo.estado
+            prestamo.estado,
+            LoanRequestId(prestamo.solicitud_id)
         )

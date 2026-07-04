@@ -29,7 +29,7 @@ class ReturnBookUseCase:
             if loan is None : return LoanNotFoundException
             #Return the loan
             loan.return_book()
-            await self.loan_repo.save_loan(loan)
+            await self.loan_repo.update_loan(loan)
         await self.loan_event_dispatcher.notify(
             LoanReturned(loan)
         )

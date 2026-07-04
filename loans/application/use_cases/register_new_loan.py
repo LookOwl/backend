@@ -46,7 +46,8 @@ class CreateLoanUseCase:
                 datetime.now(),
                 datetime.now() + loan_req.loan_time.to_timedelta(),
                 None,
-                LoanStatus.ACTIVO
+                LoanStatus.ACTIVO,
+                loan_req.loan_req_id
             )
             await self.loan_repo.save_loan(new_loan)
         return
