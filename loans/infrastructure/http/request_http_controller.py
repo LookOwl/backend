@@ -54,7 +54,7 @@ async def assignBookCopyToRequest(
         )
     try:
 
-        await use_case.execute(body.req_id,body.book_copy_id)
+        await use_case.execute(body.req_id,body.book_copy_code)
     
     except InvalidLoanRequestException:
         raise HTTPException(

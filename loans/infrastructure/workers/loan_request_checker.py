@@ -74,7 +74,11 @@ class LoanRequestConsistencyVerifier:
                         LoanRequestId(result.id),
                     UserId(result.id_usuario),
                     BookId(result.id_libro),
+<<<<<<< HEAD
                     BookCopyId(result.id_ejemplar) if result.id_ejemplar else None ,
+=======
+                    PhysicalBookCopyId(result.codigo_ejemplar) if result.codigo_ejemplar else None ,
+>>>>>>> dev
                     LoanRequestWaitTime(result.tiempo_espera),
                     LoanRequestTimeRequested(result.tiempo_prestamo),
                     result.estado,
