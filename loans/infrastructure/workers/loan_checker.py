@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from loans.domain.loan import Loan, LoanId
 from loans.domain.loan_events import LoanExpired
+from loans.domain.loan_request import LoanRequestId
 from loans.domain.loan_status import LoanStatus
 from loans.infrastructure.persistence.models.loan import Prestamo
 from users.domain.user_id import UserId
@@ -50,7 +51,8 @@ class LoanConsistencyVerifier:
                         loan.fecha_aprobacion,
                         loan.fecha_vencimiento,
                         loan.fecha_regreso,
-                        loan.estado
+                        loan.estado,
+                        LoanRequestId(loan.solicitud_id)
                     )
                 )
             )

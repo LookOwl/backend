@@ -1,5 +1,6 @@
 
 
+from books.infrastructure.adapters.persistence.sql_book_copy_repository import SQLBookCopyRepository
 from loans.application.loan_event_handler import LoanEventHandler
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -30,5 +31,13 @@ class SQLLoanEventHandler(LoanEventHandler):
         return
     
     async def onLoanReturned(self, loan: Loan) -> None:
-        #Nothing to do (Possibly a notification, in the future?)
+        async with self.async_session_factory() as session:
+            uow = SQLUnitOfWork(session)
+            book_copy_repo = SQLBookCopyRepository(session)
+            async with uow:
+                book_copy = await book_copy_repo.get_by_id(loan.book_copy_id)
+                if book_copy is None:
+                    return
+                book_copy.release()
+                await book_copy_repo.update_book_copy(book_copy)
         return
