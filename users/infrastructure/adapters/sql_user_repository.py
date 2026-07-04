@@ -4,7 +4,7 @@ from loans.domain.loan_request import LoanRequestId
 from users.domain.user import User
 from users.domain.user_credential import HashedPassword, UserCredentials
 from users.domain.user_id import UserId
-from users.domain.user_notification import UserNotification
+from users.domain.user_notification import NotificationId, UserNotification
 from users.domain.user_repository import UserRepository
 from users.infrastructure.persistence.models.user import Usuario, UsuarioSolicitudNotificationes
 
@@ -66,6 +66,7 @@ class SQLUserRepository(UserRepository):
         ).scalars().all()
         return [
             UserNotification(
+                NotificationId(result.id),
                 UserId(result.usuario_id),
                 result.tipo,
                 LoanRequestId(result.solicitud_id)
@@ -118,6 +119,14 @@ class SQLUserRepository(UserRepository):
         await self.async_session.flush()
         return
     
+    async def delete_notification(self, id: NotificationId) -> None:
+        await self.async_session.execute(
+            delete(UsuarioSolicitudNotificationes)
+            .where(UsuarioSolicitudNotificationes.id == id.id)
+        )
+        await self.async_session.flush()
+        return
+
     async def update_user( self, user : User ) -> None:
         await self.async_session.execute(
             update(Usuario)

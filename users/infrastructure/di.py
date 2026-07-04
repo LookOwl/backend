@@ -3,7 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from shared.infrastructure.persistence.di import get_sql_unit_of_work
 from shared.application.unit_of_work import UnitOfWork
 from shared.infrastructure.persistence.di import get_async_sql_session
+from users.application.delete_notification import DeleteNotificationsUseCase
 from users.application.ports import PasswordHasher, TokenHandler
+from users.application.use_cases.get_notifications import GetNotificationsUseCase
 from users.application.use_cases.login_user import LoginUser
 from users.application.use_cases.register_user import RegisterUser
 from users.domain.user_repository import UserRepository
@@ -44,4 +46,22 @@ def get_login_user_uc(
         hasher,
         token_handler,
         uow
+    )
+
+def get_notifications_use_case(
+        uow : UnitOfWork = Depends(get_sql_unit_of_work),
+        user_repo : UserRepository = Depends(get_sql_user_repo)
+):
+    return GetNotificationsUseCase(
+        uow,
+        user_repo
+    )
+
+def get_delete_notification_use_case(
+        uow : UnitOfWork = Depends(get_sql_unit_of_work),
+        user_repo : UserRepository = Depends(get_sql_user_repo)
+):
+    return DeleteNotificationsUseCase(
+        uow,
+        user_repo
     )
