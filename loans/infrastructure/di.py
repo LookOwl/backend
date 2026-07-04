@@ -82,11 +82,13 @@ def get_request_loan_uc(
 def get_start_loan_uc(
     uow : UnitOfWork = Depends(get_sql_unit_of_work),
     loan_req_repo : LoanRequestRepository = Depends(get_sql_loan_req_repo),
-    loan_repo : LoanRepository = Depends(get_sql_loan_repo)
+    loan_repo : LoanRepository = Depends(get_sql_loan_repo),
+    book_copy_repo : BookCopyRepository = Depends(get_sql_book_copy_repository)
 ):
     return CreateLoanUseCase(
         uow,
         loan_req_repo,
+        book_copy_repo,
         loan_repo
     )
 

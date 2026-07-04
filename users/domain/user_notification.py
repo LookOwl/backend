@@ -11,7 +11,12 @@ class NotificationType(Enum):
     REQ_ASSIGNED = "REQ_ASSIGNED"
 
 @dataclass
+class NotificationId:
+    id : int
+
+@dataclass
 class UserNotification:
+    notification_id : NotificationId
     user : UserId
     type : NotificationType
     loan_req_id : LoanRequestId
