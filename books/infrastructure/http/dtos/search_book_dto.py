@@ -6,11 +6,11 @@ from shared.infrastructure.http.validators import NonNegativeInt
 
 
 class SearchBookDto(BaseModel):
-    query: str
-    sort_by: SortBy | None = None
+    query: str = ""
+    sort_by: SortBy = SortBy.ID
     ascending: bool = True
-    from_date: date | None = None
-    to_date: date | None = None
+    from_date: date = date.min
+    to_date: date = date.today()
     limit: NonNegativeInt = 20
     offset: NonNegativeInt = 0
 
@@ -22,9 +22,9 @@ class AdvancedSearchBookDto(BaseModel):
     isbn: str | None = None
     language: str | None = None
     editorial: str | None = None
-    sort_by: SortBy | None = None
+    sort_by: SortBy = SortBy.ID
     ascending: bool = True
-    from_date: date | None = None
-    to_date: date | None = None
+    from_date: date = date.min
+    to_date: date = date.today()
     limit: NonNegativeInt = 20
     offset: NonNegativeInt = 0

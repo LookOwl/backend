@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from users.domain.user import User
 from users.domain.user_id import UserId
 from users.domain.user_credential import UserCredentials
+from users.domain.user_notification import NotificationId, UserNotification
 
 class UserRepository(ABC):
     
@@ -14,6 +15,14 @@ class UserRepository(ABC):
         pass
     
     @abstractmethod
+    async def get_notifications(self, user_id : UserId) -> list[UserNotification]:
+        pass
+
+    @abstractmethod
+    async def post_notification(self, notification : UserNotification) -> None:
+        pass
+
+    @abstractmethod
     async def find_user_credential(self, email : str ) -> UserCredentials | None:
         pass
 
@@ -23,6 +32,10 @@ class UserRepository(ABC):
 
     @abstractmethod
     async def delete_user( self, id : UserId ) -> None:
+        pass
+
+    @abstractmethod
+    async def delete_notification( self, id : NotificationId ) -> None:
         pass
 
     @abstractmethod

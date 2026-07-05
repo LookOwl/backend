@@ -1,7 +1,8 @@
 from __future__ import annotations
 from shared.infrastructure.persistence.models.base import BaseModel
+from users.domain.user_notification import NotificationType
 from users.domain.user_role import UserRole
-from sqlalchemy import String
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 
@@ -32,3 +33,15 @@ class Usuario(BaseModel):
 
     prestamos: Mapped[list[Prestamo]] = relationship(back_populates="usuario",lazy='selectin')
     solicitudes: Mapped[list[SolicitudLibro]] = relationship(back_populates="usuario",lazy='selectin')
+    notificaciones : Mapped[list["UsuarioSolicitudNotificationes"]] = relationship(back_populates="usuario")
+
+class UsuarioSolicitudNotificationes(BaseModel):
+
+    __tablename__ = "usuario_notificaciones"
+
+    usuario_id : Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
+    solicitud_id : Mapped[int] = mapped_column(ForeignKey("solicitudes_libro.id"))
+    tipo : Mapped[NotificationType] = mapped_column(nullable=False)
+
+    solicitud : Mapped["SolicitudLibro"] = relationship(back_populates="notificaciones")
+    usuario : Mapped["Usuario"] = relationship(back_populates="notificaciones")

@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from books.application.use_cases.delete_book import DeleteBook
+from books.application.use_cases.get_book_by_id import GetBookById
 from books.application.use_cases.get_book_copies import GetBookCopies
 from books.application.use_cases.register_book import RegisterBook
 from books.application.use_cases.register_book_copy import RegisterBookCopy
 from books.application.use_cases.search_books import AdvancedSearchBooks, SearchBooks
+from books.application.use_cases.update_book import UpdateBook
 from books.domain.book import Book, BookId
 from books.domain.book_copy import BookCopy
-from books.infrastructure.di import get_advanced_search_book_uc, get_book_copies_uc, get_deleter_book_uc, get_register_book_copies_uc, get_register_book_uc, get_search_book_uc
+from books.infrastructure.di import get_advanced_search_book_uc, get_book_copies_uc, get_deleter_book_uc, get_register_book_copies_uc, get_register_book_uc, get_search_book_by_id_uc, get_search_book_uc, get_updater_book_uc
 from books.infrastructure.http.dtos.book_copy_dto import BookCopyDto
+from books.infrastructure.http.dtos.update_book_dto import UpdateBookDTO
 from books.infrastructure.http.dtos.book_dto import BookDto
 from books.infrastructure.http.dtos.register_book_copy_dto import RegisterBookCopyDto
 from books.infrastructure.http.dtos.register_book_dto import RegisterBookDto
@@ -19,6 +22,21 @@ from users.domain.user import User
 from users.domain.user_role import UserRole
 
 router = APIRouter(prefix="/books",tags=["books"])
+
+@router.get("/{book_id}")
+async def search_book_by_id(
+    book_id: int,
+    get_book_by_id: GetBookById = Depends(get_search_book_by_id_uc)
+):
+    try:
+        book : Book = await get_book_by_id.execute(book_id)
+        return BookDto.to_dto(book)
+    except Exception:
+        raise HTTPException(
+            status_code=404,
+            detail="No se encontro el recurso solicitado"
+        )
+
 
 @router.post("/search")
 async def basic_search_books(
@@ -167,6 +185,41 @@ async def recommend_by_book(
         raise HTTPException(status_code=500, detail=str(exc))
 
     return {"recommendations": [BookDto.to_dto(b) for b in books]}
+
+@router.patch("/{book_id}")
+async def update_book(
+    book_id: int,
+    info: UpdateBookDTO,
+    user: User = Depends(jwt_auth_guard),
+    update_book: UpdateBook = Depends(get_updater_book_uc)
+):
+    if user.role != UserRole.BIBLIOTECARIO:
+        raise HTTPException(
+            status_code=403,
+            detail="Solo bibliotecarios autorizados"
+        )
+
+    try:
+        await update_book.execute(
+            book_id,
+            user.id.uid,
+            title=info.title,
+            isbn=info.isbn,
+            description=info.description,
+            editorial=info.editorial,
+            publication_date=info.publication_date,
+            cover_url=info.cover_url,
+            language=info.language,
+            authors=info.author,
+            categories=info.category,
+            page_count=info.page_count,
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=409,
+            detail="No se pudo actualizar el libro"
+        )
+
 
 @router.delete("/{book_id}")
 async def delete_book(

@@ -1,7 +1,5 @@
 from datetime import date
-
 from pydantic import AnyUrl, BaseModel
-
 from shared.infrastructure.http.validators import IsbnString
 from shared.infrastructure.http.validators import LanguageString, NonEmptyString, NonEmptyStringList, PositiveInt
 
@@ -16,4 +14,3 @@ class RegisterBookDto(BaseModel):
     author : NonEmptyStringList
     category : NonEmptyStringList
     page_count : PositiveInt
-

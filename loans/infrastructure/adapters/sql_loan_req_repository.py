@@ -28,7 +28,17 @@ class SQLLoanRequestRepository(LoanRequestRepository):
         if result is None: return None
         return self._to_domain(result)
 
+    async def get_by_copy_id(self, id: BookCopyId) -> LoanRequest | None:
+        result = (
+            await self.async_session.execute(
+            select(SolicitudLibro)
+            .where(SolicitudLibro.id_ejemplar == id.id)
+        )).scalar_one_or_none()
+        if result is None: return None
+        return self._to_domain(result)
     
+        return 
+
     async def get_n_first_pending_by_book_id(self, id: BookId, limit : int) -> list[LoanRequest]:
         results = (
             await self.async_session.execute(
@@ -51,7 +61,6 @@ class SQLLoanRequestRepository(LoanRequestRepository):
                 .select_from(SolicitudLibro)
                 .where(SolicitudLibro.id_libro == id.id)
                 .where(SolicitudLibro.estado == LoanRequestStatus.PENDIENTE)
-                .order_by(SolicitudLibro.created_at)
             )
         ).scalar_one()
         
@@ -62,7 +71,7 @@ class SQLLoanRequestRepository(LoanRequestRepository):
             SolicitudLibro(
                 id_usuario = request.user_id.uid,
                 id_libro = request.book_id.id,
-                codigo_ejemplar = request.book_copy_code.physical_id if request.book_copy_code else None,
+                id_ejemplar = request.book_copy_code.id if request.book_copy_code else None,
                 tiempo_espera= request.wait_time.time,
                 tiempo_prestamo = request.loan_time.time,
                 estado = request.status 
@@ -88,7 +97,7 @@ class SQLLoanRequestRepository(LoanRequestRepository):
             .values(
                 id_usuario = loan_req.user_id.uid,
                 id_libro = loan_req.book_id.id,
-                codigo_ejemplar = loan_req.book_copy_code.physical_id if loan_req.book_copy_code else None,
+                id_ejemplar = loan_req.book_copy_code.id if loan_req.book_copy_code else None,
                 tiempo_espera= loan_req.wait_time.time,
                 tiempo_prestamo = loan_req.loan_time.time,
                 estado = loan_req.status
@@ -102,7 +111,7 @@ class SQLLoanRequestRepository(LoanRequestRepository):
             LoanRequestId(solicitud.id),
             UserId(solicitud.id_usuario),
             BookId(solicitud.id_libro),
-            BookCopyId(solicitud.codigo_ejemplar) if solicitud.codigo_ejemplar else None ,
+            BookCopyId(solicitud.id_ejemplar) if solicitud.id_ejemplar else None ,
             LoanRequestWaitTime(solicitud.tiempo_espera),
             LoanRequestTimeRequested(solicitud.tiempo_prestamo),
             solicitud.estado,

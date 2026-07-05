@@ -10,8 +10,8 @@ from shared.infrastructure.cache.redis_controller import RedisController
 async def get_redis_session(
     request : Request
 ):
-    assert isinstance(request.state.redis, Redis)
-    return request.state.redis
+    assert isinstance(request.app.state.redis, Redis)
+    return request.app.state.redis
 
 
 async def get_redis_controller(

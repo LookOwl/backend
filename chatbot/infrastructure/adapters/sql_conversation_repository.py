@@ -1,4 +1,5 @@
 from sqlalchemy import delete, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from chatbot.domain.conversation import Conversation, ConversationId, ConversationStatus
@@ -6,78 +7,78 @@ from chatbot.domain.conversation_repository import ConversationRepository
 from chatbot.domain.message import Message, ToolCall, ToolResult
 from chatbot.infrastructure.persistence.conversation import ConversacionChat
 from chatbot.infrastructure.persistence.message import MensajeChat
-from shared.infrastructure.persistence.sql_drivers import async_session_factory
 from users.domain.user_id import UserId
 
 
 class SQLConversationRepository(ConversationRepository):
 
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
     async def load(self, user_id: UserId) -> Conversation | None:
-        async with async_session_factory() as session:
-            result = await session.execute(
-                select(ConversacionChat)
-                .where(
-                    ConversacionChat.usuario_id == user_id.uid,
-                    ConversacionChat.estado == ConversationStatus.ACTIVA,
-                )
-                .options(selectinload(ConversacionChat.mensajes))
-                .order_by(ConversacionChat.id.desc())
-                .limit(1)
+        result = await self.session.execute(
+            select(ConversacionChat)
+            .where(
+                ConversacionChat.usuario_id == user_id.uid,
+                ConversacionChat.estado == ConversationStatus.ACTIVA,
             )
-            row = result.scalar_one_or_none()
-            if row is None:
-                return None
-            return self._to_domain(row)
+            .options(selectinload(ConversacionChat.mensajes))
+            .order_by(ConversacionChat.id.desc())
+            .limit(1)
+        )
+        row = result.scalar_one_or_none()
+        if row is None:
+            return None
+        return self._to_domain(row)
 
     async def save(self, conversation: Conversation) -> None:
-        async with async_session_factory() as session:
-            if conversation.id.id == 0:
-                row = ConversacionChat(
-                    usuario_id=conversation.user_id.uid,
+        if conversation.id.id == 0:
+            row = ConversacionChat(
+                usuario_id=conversation.user_id.uid,
+                estado=conversation.status,
+            )
+            self.session.add(row)
+            await self.session.flush()
+            await self.session.refresh(row)
+
+            conversation.id.id = row.id
+            conversation.created_at = row.created_at
+            conversation.modified_at = row.updated_at
+
+            for msg in conversation.history:
+                orm_msg = self._message_to_orm(msg)
+                orm_msg.conversacion_id = row.id
+                self.session.add(orm_msg)
+            await self.session.flush()
+
+        else:
+            await self.session.execute(
+                delete(MensajeChat).where(
+                    MensajeChat.conversacion_id == conversation.id.id
+                )
+            )
+
+            await self.session.execute(
+                update(ConversacionChat)
+                .where(ConversacionChat.id == conversation.id.id)
+                .values(
                     estado=conversation.status,
                 )
-                session.add(row)
-                await session.flush()
-                await session.refresh(row)
+            )
 
-                conversation.id.id = row.id
-                conversation.created_at = row.created_at
-                conversation.modified_at = row.updated_at
+            for msg in conversation.history:
+                orm_msg = self._message_to_orm(msg)
+                orm_msg.conversacion_id = conversation.id.id
+                self.session.add(orm_msg)
+            await self.session.flush()
 
-                for msg in conversation.history:
-                    orm_msg = self._message_to_orm(msg)
-                    orm_msg.conversacion_id = row.id
-                    session.add(orm_msg)
-                await session.flush()
-
-            else:
-                await session.execute(
-                    delete(MensajeChat).where(
-                        MensajeChat.conversacion_id == conversation.id.id
-                    )
+            result = await self.session.execute(
+                select(ConversacionChat).where(
+                    ConversacionChat.id == conversation.id.id
                 )
-
-                await session.execute(
-                    update(ConversacionChat)
-                    .where(ConversacionChat.id == conversation.id.id)
-                    .values(
-                        estado=conversation.status,
-                    )
-                )
-
-                for msg in conversation.history:
-                    orm_msg = self._message_to_orm(msg)
-                    orm_msg.conversacion_id = conversation.id.id
-                    session.add(orm_msg)
-                await session.flush()
-
-                result = await session.execute(
-                    select(ConversacionChat).where(
-                        ConversacionChat.id == conversation.id.id
-                    )
-                )
-                row = result.scalar_one()
-                conversation.modified_at = row.updated_at
+            )
+            row = result.scalar_one()
+            conversation.modified_at = row.updated_at
 
     def _to_domain(self, row: ConversacionChat) -> Conversation:
         return Conversation(

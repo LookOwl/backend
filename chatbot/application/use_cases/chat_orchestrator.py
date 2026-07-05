@@ -4,6 +4,7 @@ from chatbot.domain.conversation import Conversation, ConversationId, Conversati
 from chatbot.domain.message import Message, MessageRole, ToolResult
 from chatbot.domain.conversation_repository import ConversationRepository
 from chatbot.domain.tools import LLMResponse, ToolDefinition
+from shared.application.unit_of_work import UnitOfWork
 from users.domain.user_id import UserId
 
 
@@ -17,18 +18,21 @@ class ChatOrchestrator(ChatInputPort):
         llm: LLMPort,
         token_counter: TokenCounterPort,
         tool_executor: ToolExecutorPort,
+        uow: UnitOfWork,
     ) -> None:
         self.repo = repo
         self.llm = llm
         self.token_counter = token_counter
         self.tool_executor = tool_executor
+        self.uow = uow
         self._tools = self._register_tools()
 
     async def process_user_message(self, user_id: UserId, user_input: str) -> str:
-        conv = await self._load_or_create(user_id)
-        conv.add_message(Message(role=MessageRole.USER, content=user_input))
-        final_answer = await self._run_llm_loop(conv)
-        await self.repo.save(conv)
+        async with self.uow:
+            conv = await self._load_or_create(user_id)
+            conv.add_message(Message(role=MessageRole.USER, content=user_input))
+            final_answer = await self._run_llm_loop(conv)
+            await self.repo.save(conv)
         return final_answer
 
     async def _run_llm_loop(self, conv: Conversation) -> str:

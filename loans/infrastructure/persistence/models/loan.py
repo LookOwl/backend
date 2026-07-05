@@ -29,7 +29,7 @@ class Prestamo(BaseModel):
 
     __tablename__ = "prestamos"
 
-    codigo_ejemplar: Mapped[str] = mapped_column(ForeignKey("ejemplares.codigo"))
+    id_ejemplar: Mapped[int] = mapped_column(ForeignKey("ejemplares.id"))
     id_usuario_asociado: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
     fecha_aprobacion: Mapped[date]
     fecha_vencimiento: Mapped[date]

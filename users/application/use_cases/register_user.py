@@ -20,14 +20,15 @@ class RegisterUser:
         full_name: str,
         contact_number: str,
         email: str,
-        password: str
+        password: str,
+        role: UserRole = UserRole.LECTOR
     ) -> None:
         async with self.uow:
             await self.user_repo.save_user(User(
                 id = UserId(-1),
                 full_name=full_name,
                 contact_number=contact_number,
-                role=UserRole.LECTOR,
+                role=role,
                 credentials=UserCredentials(email,self.hasher.hash_password(password))
             ))
         return

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-
 from books.application.use_cases.delete_book_copy import DeleteBookCopy
 from books.application.use_cases.update_book_copy import UpdateBookCopy
 from books.infrastructure.di import get_deleter_book_copy_uc, get_updater_book_copies_uc

@@ -1,5 +1,4 @@
 from datetime import date
-
 from books.domain.book import Book, BookAuthor, BookCategory, BookEditorial, BookISBN, BookLanguage, BookTitle
 from books.domain.book_repository import BookRepository
 from books.domain.book_search_criteria import AdvancedBookSearchCriteria, BookSearchCriteria, SortBy
@@ -21,16 +20,13 @@ class SearchBooks:
     async def execute(
         self,
         query: str,
+        sort_by: SortBy,
+        ascending: bool,
+        from_date: date,
+        to_date: date,
         limit: int = 20,
-        offset: int = 0,
-        sort_by: SortBy | None = None,
-        ascending: bool = True,
-        from_date: date | None = None,
-        to_date: date | None = None,
+        offset: int = 0
     ) -> list[Book]:
-
-        sort_by = sort_by or SortBy.ID
-
         async with self.uow:
             results: list[Book] = await self.book_repo.search_book(
                 BookSearchCriteria(
@@ -60,22 +56,19 @@ class AdvancedSearchBooks:
 
     async def execute(
         self,
-        limit: int = 20,
-        offset: int = 0,
+        sort_by: SortBy,
+        ascending: bool,
+        from_date: date,
+        to_date: date,
         title: str | None = None,
         authors: list[str] | None = None,
         categories: list[str] | None = None,
         isbn: str | None = None,
         language: str | None = None,
         editorial: str | None = None,
-        sort_by: SortBy | None = None,
-        ascending: bool = True,
-        from_date: date | None = None,
-        to_date: date | None = None,
+        limit: int = 20,
+        offset: int = 0,
     ) -> list[Book]:
-
-        sort_by = sort_by or SortBy.ID
-
         async with self.uow:
             criteria = AdvancedBookSearchCriteria(
                 title=BookTitle(title=title) if title else None,

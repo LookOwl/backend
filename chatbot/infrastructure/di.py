@@ -11,6 +11,22 @@ from chatbot.infrastructure.adapters.anthropic_adapter import AnthropicAdapter
 from chatbot.infrastructure.adapters.book_tool_executor import BookToolExecutor
 from chatbot.infrastructure.adapters.sql_conversation_repository import SQLConversationRepository
 from chatbot.infrastructure.adapters.token_counter import TokenizerCounterAdapter
+from shared.application.unit_of_work import UnitOfWork
+from shared.infrastructure.persistence.sql_drivers import async_session_factory
+from shared.infrastructure.persistence.sql_unit_of_work import SQLUnitOfWork
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+async def get_chat_async_sql_session():
+    """Sesión dedicada para el chat, separada de la usada por las tool calls."""
+    async with async_session_factory() as session:
+        yield session
+
+
+def get_chat_unit_of_work(
+    session: AsyncSession = Depends(get_chat_async_sql_session),
+) -> UnitOfWork:
+    return SQLUnitOfWork(session)
 
 
 def get_token_counter() -> TokenCounterPort:
@@ -31,18 +47,22 @@ def get_book_tool_executor(
         query_recommendations_uc=query_recommendations_uc,
     )
 
-def get_conversation_repo() -> ConversationRepository:
-    return SQLConversationRepository()
+def get_conversation_repo(
+    session: AsyncSession = Depends(get_chat_async_sql_session),
+) -> ConversationRepository:
+    return SQLConversationRepository(session)
 
 def get_chat_orchestrator(
     repo: ConversationRepository = Depends(get_conversation_repo),
     llm: LLMPort = Depends(get_anthropic_llm),
     token_counter: TokenCounterPort = Depends(get_token_counter),
     tool_executor: ToolExecutorPort = Depends(get_book_tool_executor),
+    uow: UnitOfWork = Depends(get_chat_unit_of_work),
 ) -> ChatOrchestrator:
     return ChatOrchestrator(
         repo=repo,
         llm=llm,
         token_counter=token_counter,
         tool_executor=tool_executor,
+        uow=uow,
     )

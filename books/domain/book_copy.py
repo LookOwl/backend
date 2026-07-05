@@ -7,14 +7,18 @@ class BookCopyStatus(Enum):
     PRESTADO = "PRESTADO"
     DANADO = "DANADO"
 
-
 @dataclass
 class BookCopyId:
+    id : int
+
+@dataclass
+class PhysicalBookCopyId:
     physical_id : str
 
 @dataclass
 class BookCopy:
-    copy_id: BookCopyId
+    id : BookCopyId
+    physical_copy_id: PhysicalBookCopyId
     book_id : BookId
     status: BookCopyStatus
 
