@@ -20,10 +20,10 @@ class SearchBooks:
     async def execute(
         self,
         query: str,
-        sort_by: SortBy,
-        ascending: bool,
-        from_date: date,
-        to_date: date,
+        sort_by: SortBy = SortBy.ID,
+        ascending: bool = True,
+        from_date: date = date.min,
+        to_date: date = date.today(),
         limit: int = 20,
         offset: int = 0
     ) -> list[Book]:
