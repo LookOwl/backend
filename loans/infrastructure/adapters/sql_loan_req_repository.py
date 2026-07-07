@@ -1,4 +1,4 @@
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from books.domain.book import BookId
 from books.domain.book_copy import BookCopyId
@@ -83,8 +83,11 @@ class SQLLoanRequestRepository(LoanRequestRepository):
     
     async def remove_request(self, id : LoanRequestId) -> None:
         await self.async_session.execute(
-            delete(SolicitudLibro)
+            update(SolicitudLibro)
             .where(SolicitudLibro.id == id.id)
+            .values(
+                estado = LoanRequestStatus.CANCELADA
+            )
         )
         await self.async_session.flush()
         return
