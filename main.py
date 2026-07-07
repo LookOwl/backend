@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
 from contextlib import asynccontextmanager
 from loans.application.loan_dispatcher import LoanEventDispatcher
@@ -83,6 +84,15 @@ async def lifespan(app : FastAPI):
     await app.state.redis.aclose()
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://frontend-one-tau-97.vercel.app"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(prefix= "/api", router= r1 )
 app.include_router(prefix= "/api", router= r2 )
 app.include_router(prefix= "/api", router= r3 )
