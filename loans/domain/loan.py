@@ -24,7 +24,7 @@ class Loan:
     
     def return_book(self):
         self.status = LoanStatus.CONCLUIDO
-        self.return_date = datetime.now()
+        self.return_date = date.today()
 
     def expire(self):
         self.status = LoanStatus.VENCIDO

@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import date
-import datetime
 
 from users.domain.user import User, UserRole
 
@@ -84,7 +83,7 @@ class BookBuilder:
         self.isbn = None
         self.description = BookDescription("")
         self.editorial = None
-        self.publication_date = BookPublicationDate(datetime.datetime.now())
+        self.publication_date = None
         self.cover_url = None
         self.language = BookLanguage("")
         self.author = BookAuthor([])
