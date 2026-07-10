@@ -86,7 +86,8 @@ class SQLLoanRequestRepository(LoanRequestRepository):
             update(SolicitudLibro)
             .where(SolicitudLibro.id == id.id)
             .values(
-                estado = LoanRequestStatus.CANCELADA
+                estado = LoanRequestStatus.CANCELADA,
+                updated_at = func.now()
             )
         )
         await self.async_session.flush()
@@ -103,7 +104,8 @@ class SQLLoanRequestRepository(LoanRequestRepository):
                 id_ejemplar = loan_req.book_copy_code.id if loan_req.book_copy_code else None,
                 tiempo_espera= loan_req.wait_time.time,
                 tiempo_prestamo = loan_req.loan_time.time,
-                estado = loan_req.status
+                estado = loan_req.status,
+                updated_at = func.now()
             )
         )
         await self.async_session.flush()
