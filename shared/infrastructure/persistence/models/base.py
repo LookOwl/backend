@@ -25,5 +25,5 @@ class BaseModel(Base):
     __abstract__ = True
 
     id: MappedColumn[intpk]
-    created_at = mapped_column(DateTime, server_default=func.now())
-    updated_at = mapped_column(DateTime, onupdate=func.now())
+    created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at = mapped_column(DateTime(timezone=True), onupdate=func.now())
