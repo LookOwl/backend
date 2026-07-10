@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from users.domain.user_id import UserId
@@ -27,8 +27,8 @@ class Conversation:
 
     def add_message(self, message: Message) -> None:
         self.history.append(message)
-        self.modified_at = datetime.now()
+        self.modified_at = datetime.now(timezone.utc)
 
     def close(self) -> None:
         self.status = ConversationStatus.CERRADA
-        self.modified_at = datetime.now()
+        self.modified_at = datetime.now(timezone.utc)
