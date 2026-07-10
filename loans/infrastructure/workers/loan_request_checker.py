@@ -43,7 +43,7 @@ class LoanRequestConsistencyVerifier:
                 select(SolicitudLibro)
                 .where(SolicitudLibro.estado == LoanRequestStatus.NOTIFICADA)
                 .where(
-                    SolicitudLibro.created_at + func.make_interval(0,0,0,7,0,0,0,0) > func.now()
+                    SolicitudLibro.created_at + func.make_interval(0,0,0,7,0,0,0) > func.now()
                 )
             )
         ).scalars().all()
