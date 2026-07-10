@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock
 
 import pytest
@@ -49,8 +49,8 @@ def _make_loan_request(request_id: int, book_id: int, user_id: int = 1) -> LoanR
         wait_time=LoanRequestWaitTime(time=48),
         loan_time=LoanRequestTimeRequested(time=14),
         status=LoanRequestStatus.PENDIENTE,
-        created_at=datetime.now(),
-        modified_at=datetime.now(),
+        created_at=datetime.now(timezone.utc),
+        modified_at=datetime.now(timezone.utc),
     )
 
 
