@@ -10,13 +10,24 @@ class RedisController:
     TOTAL_COPIES_PREFIX = "totCopies"
     DEFAULT_TTL_SECONDS = 3600
 
+    # NOTE: both scripts no-op when the key is absent. Applying a delta to a
+    # missing baseline would create a key holding only the delta (e.g. -1),
+    # which the reader would then trust instead of rebuilding from the DB. By
+    # leaving the key absent, the next read still sees a cache miss and rebuilds
+    # from the (already committed) DB state, so no delta is lost.
     INCR_WITH_TTL_SCRIPT = """
+        if redis.call('EXISTS', KEYS[1]) == 0 then
+            return nil
+        end
         local value = redis.call('INCR', KEYS[1])
         redis.call('EXPIRE', KEYS[1], ARGV[1])
         return value
     """
 
     DECR_WITH_TTL_SCRIPT = """
+        if redis.call('EXISTS', KEYS[1]) == 0 then
+            return nil
+        end
         local value = redis.call('DECR', KEYS[1])
         redis.call('EXPIRE', KEYS[1], ARGV[1])
         return value

@@ -1,8 +1,8 @@
 from books.domain.book import BookId
 from books.domain.book_availability import BookAvailability
-from books.domain.book_availability_reader import BookAvailabilityReader
+from books.domain.book_availability_reader import BookAvailabilityCacheMiss, BookAvailabilityReader
 from shared.infrastructure.cache.lock import RedisLockManager
-from shared.infrastructure.cache.redis_controller import RedisController
+from shared.infrastructure.cache.redis_controller import CacheMissException, RedisController
 
 
 class RedisBookAvailabilityReader(BookAvailabilityReader):
@@ -26,8 +26,11 @@ class RedisBookAvailabilityReader(BookAvailabilityReader):
 
     async def get_availability(self, book_id: BookId) -> BookAvailability:
         async with self.redis_lock_manager.acquire(str(book_id.id),wait=True):
-            available_books = await self.redis_controller.get_available_slots(book_id.id)
-            total_copies = await self.redis_controller.get_total_copies(book_id.id)
+            try:
+                available_books = await self.redis_controller.get_available_slots(book_id.id)
+                total_copies = await self.redis_controller.get_total_copies(book_id.id)
+            except CacheMissException as exc:
+                raise BookAvailabilityCacheMiss(str(book_id.id)) from exc
         return BookAvailability(
             book_id,
             available_books,
