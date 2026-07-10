@@ -39,7 +39,7 @@ class SQLBookCopyRepository(BookCopyRepository):
                     select(Ejemplar)
                     .where(
                         Ejemplar.codigo == physical_id.physical_id,
-                        Ejemplar.estado == BookCopyStatus.DISPONIBLE
+                        Ejemplar.activo
                     )
                 )
             ).scalar_one_or_none()
