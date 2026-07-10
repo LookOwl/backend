@@ -22,10 +22,10 @@ Endpoints:
 - Registrar devolución de libro (bibliotecario)
 '''
 @router.post(path="/start")
-async def start_loan( 
+async def start_loan(
         body : CreateLoanDto,
         user : User = Depends(jwt_auth_guard),
-        use_case : CreateLoanUseCase = Depends(get_start_loan_uc)  
+        use_case : CreateLoanUseCase = Depends(get_start_loan_uc)
 ):
     if(user.role != UserRole.BIBLIOTECARIO):
         raise HTTPException(
@@ -50,7 +50,7 @@ async def start_loan(
             status_code=503,
             detail=f"Fatal error: {e.__str__()}"
         )
-    
+
 
 @router.get(path="/user")
 async def get_loans_of_user(
@@ -72,11 +72,11 @@ async def get_loans_of_user(
             ) for loan in loans
         ]
     except Exception as e:
-        return HTTPException(
+        raise HTTPException(
             status_code=503,
             detail=f"Cannot attend request: {e.__str__()}"
         )
-    
+
 
 @router.get(path="/{book_id}")
 async def get_loans_of_book(
@@ -105,7 +105,7 @@ async def get_loans_of_book(
             ) for loan in loans
         ]
     except Exception as e:
-        return HTTPException(
+        raise HTTPException(
             status_code=503,
             detail=f"Cannot attend request: {e.__str__()}"
         )
@@ -128,7 +128,7 @@ async def return_book(
         raise HTTPException(
             status_code=422,
             detail="Loan not found"
-        ) 
+        )
     except Exception as e:
         print(e.__str__())
         raise HTTPException(
