@@ -106,7 +106,7 @@ def upgrade() -> None:
     sa.Column('codigo_ejemplar', sa.String(length=50), nullable=True),
     sa.Column('tiempo_espera', sa.Integer(), nullable=False),
     sa.Column('tiempo_prestamo', sa.Integer(), nullable=False),
-    sa.Column('estado', sa.Enum('PENDIENTE', 'CANCELADA', 'ASIGNADA', 'NOTIFICADA', name='loanrequeststatus'), nullable=False),
+    sa.Column('estado', sa.Enum('PENDIENTE', 'CANCELADA', 'ASIGNADA', 'NOTIFICADA', 'COMPLETADA', name='loanrequeststatus'), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
