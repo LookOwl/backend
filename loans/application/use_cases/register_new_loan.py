@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from books.domain.book_copy import PhysicalBookCopyId
 from books.domain.book_copy_repository import BookCopyRepository
@@ -43,8 +43,8 @@ class CreateLoanUseCase:
                 loan_req.user_id,
                 loan_req.book_copy_code,
                 loan_req.book_id,
-                datetime.now(),
-                datetime.now() + loan_req.loan_time.to_timedelta(),
+                datetime.now(timezone.utc).date(),
+                (datetime.now(timezone.utc) + loan_req.loan_time.to_timedelta()).date(),
                 None,
                 LoanStatus.ACTIVO,
                 loan_req.loan_req_id

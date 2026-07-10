@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import  datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from books.domain.book import BookId
 from books.domain.book_copy import BookCopyId
@@ -38,7 +38,7 @@ class LoanRequest:
     modified_at : datetime
 
     def expire(self):
-        if(datetime.now() - self.created_at >= self.wait_time.to_timedelta()):
+        if(datetime.now(timezone.utc) - self.created_at >= self.wait_time.to_timedelta()):
             self.status = LoanRequestStatus.CANCELADA
         else:
             raise Exception("Not possible to expire")

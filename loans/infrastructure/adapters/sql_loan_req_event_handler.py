@@ -74,7 +74,7 @@ class SQLLoanRequestEventHandler(LoanRequestEventHandler):
                     UserNotification(
                         NotificationId(0),
                         loan.user_id,
-                        NotificationType.INTEREST_TIME_EXPIRED,
+                        NotificationType.PICKUP_TIME_EXPIRED,
                         loan.loan_req_id
                     )
                 )

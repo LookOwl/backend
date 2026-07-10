@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from books.application.book_availability_facade import BookAvailabilityFacade
 from books.domain.book import Book, BookId
@@ -52,8 +52,8 @@ class RequestLoan:
                 wait_time=LoanRequestWaitTime(time=max_interest_time),
                 loan_time=LoanRequestTimeRequested(time=requested_loan_time),
                 status=LoanRequestStatus.PENDIENTE,
-                created_at=datetime.now(),
-                modified_at=datetime.now()
+                created_at=datetime.now(timezone.utc),
+                modified_at=datetime.now(timezone.utc)
             )
             #save the request
             await self.loan_request_repository.save_request(request)

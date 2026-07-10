@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from chatbot.application.ports import ChatInputPort, LLMPort, TokenCounterPort, ToolExecutorPort
 from chatbot.domain.conversation import Conversation, ConversationId, ConversationStatus
 from chatbot.domain.message import Message, MessageRole, ToolResult
@@ -139,7 +139,7 @@ class ChatOrchestrator(ChatInputPort):
         """
         existing = await self.repo.load(user_id)
         if existing and existing.status == ConversationStatus.ACTIVA:
-            if (existing.modified_at and (datetime.now() - existing.modified_at) > timedelta(hours=2)):
+            if (existing.modified_at and (datetime.now(timezone.utc) - existing.modified_at) > timedelta(hours=2)):
                 existing.close()
                 await self.repo.save(existing)
             else:

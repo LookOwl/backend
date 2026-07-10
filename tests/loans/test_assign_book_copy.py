@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock
 from books.domain.book import BookTitle, BookISBN, BookDescription, BookEditorial, BookCover, BookLanguage, BookAuthor, BookCategory, BookPageCount
 
@@ -55,8 +55,8 @@ def _make_loan_request(
         wait_time=LoanRequestWaitTime(time=48),
         loan_time=LoanRequestTimeRequested(time=14),
         status=LoanRequestStatus.PENDIENTE,
-        created_at=datetime.now(),
-        modified_at=datetime.now(),
+        created_at=datetime.now(timezone.utc),
+        modified_at=datetime.now(timezone.utc),
     )
 
 
