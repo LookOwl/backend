@@ -50,6 +50,11 @@ class CreateLoanUseCase:
                 loan_req.loan_req_id
             )
             await self.loan_repo.save_loan(new_loan)
+            # The request is now fulfilled: move it to a terminal state so its copy
+            # is no longer matched as "awaiting pickup" (keeps get_by_copy_id's
+            # one-NOTIFICADA-per-copy invariant intact across future loan cycles).
+            loan_req.status = LoanRequestStatus.COMPLETADA
+            await self.loan_req_repo.update_loan_request(loan_req)
         return
                 
 class LoanRequestNotFoundException(Exception) : pass

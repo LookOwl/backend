@@ -5,3 +5,4 @@ class LoanRequestStatus(Enum):
     CANCELADA = "CANCELADA"
     ASIGNADA = "ASIGNADA"
     NOTIFICADA = "NOTIFICADA"
+    COMPLETADA = "COMPLETADA"

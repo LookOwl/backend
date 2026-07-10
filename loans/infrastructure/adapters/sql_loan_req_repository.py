@@ -29,15 +29,23 @@ class SQLLoanRequestRepository(LoanRequestRepository):
         return self._to_domain(result)
 
     async def get_by_copy_id(self, id: BookCopyId) -> LoanRequest | None:
+        # A copy is hard-locked to at most one request awaiting pickup (NOTIFICADA)
+        # at a time. Older requests that were fulfilled (COMPLETADA) or expired
+        # (CANCELADA) keep their id_ejemplar, so we must scope by status. Ordering
+        # newest-first + limit 1 stays safe against any legacy NOTIFICADA duplicates
+        # left by data created before the COMPLETADA lifecycle existed.
         result = (
             await self.async_session.execute(
             select(SolicitudLibro)
-            .where(SolicitudLibro.id_ejemplar == id.id)
-        )).scalar_one_or_none()
+            .where(
+                SolicitudLibro.id_ejemplar == id.id,
+                SolicitudLibro.estado == LoanRequestStatus.NOTIFICADA,
+            )
+            .order_by(SolicitudLibro.created_at.desc())
+            .limit(1)
+        )).scalars().first()
         if result is None: return None
         return self._to_domain(result)
-    
-        return 
 
     async def get_n_first_pending_by_book_id(self, id: BookId, limit : int) -> list[LoanRequest]:
         results = (
